@@ -10,23 +10,41 @@
         android:id="@+id/button_play"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:onClick="onButtonPlayClick"
         android:text="Play"
-        tools:layout_editor_absoluteX="88dp"
-        tools:layout_editor_absoluteY="205dp" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/button_stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Stop"
-        tools:layout_editor_absoluteX="228dp"
-        tools:layout_editor_absoluteY="205dp" />
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp" />
 
     <Button
         android:id="@+id/button_rec"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Rec"
-        tools:layout_editor_absoluteX="359dp"
-        tools:layout_editor_absoluteY="205dp" />
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/button_analyse"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:onClick="onButtonAnalyseClick"
+        android:text="Analyse"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent" />
 </android.support.constraint.ConstraintLayout>
