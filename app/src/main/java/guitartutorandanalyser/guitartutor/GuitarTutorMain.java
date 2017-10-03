@@ -18,7 +18,7 @@ public class GuitarTutorMain extends AppCompatActivity {
     }
 
     public void onButtonLessonsClick(View v){
-asd
+        startActivity(new Intent("guitartutorandanalyser.guitartutor.Lessons"));
     }
 
     public void onButtonRecordsClick(View v){

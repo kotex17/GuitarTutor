@@ -43,7 +43,7 @@ public class Songs extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
                 TextView textView = (TextView)viewClicked;
 
-                startActivity(new Intent(""));
+                startActivity(new Intent("guitartutorandanalyser.guitartutor.Tutor"));
             }
         });
     }

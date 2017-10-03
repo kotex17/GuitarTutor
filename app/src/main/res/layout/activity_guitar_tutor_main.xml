@@ -10,39 +10,43 @@
         android:id="@+id/button_songs"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="16dp"
         android:onClick="onButtonSongsClick"
         android:text="Dalok"
         app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="252dp" />
+        android:layout_marginLeft="252dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
     <Button
         android:id="@+id/button_lessons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="12dp"
         android:onClick="onButtonLessonsClick"
         android:text="Leckék"
         app:layout_constraintTop_toBottomOf="@+id/button_songs"
-        tools:layout_editor_absoluteX="252dp" />
+        android:layout_marginLeft="252dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
     <Button
         android:id="@+id/button_records"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
         android:onClick="onButtonRecordsClick"
         android:text="Rekordok"
         app:layout_constraintTop_toBottomOf="@+id/button_lessons"
-        tools:layout_editor_absoluteX="252dp" />
+        android:layout_marginLeft="249dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
     <Button
         android:id="@+id/button_help"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="24dp"
         android:onClick="onButtonHelpClick"
         android:text="Segítség"
         app:layout_constraintTop_toBottomOf="@+id/button_records"
-        tools:layout_editor_absoluteX="252dp" />
+        android:layout_marginLeft="252dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
 </android.support.constraint.ConstraintLayout>
