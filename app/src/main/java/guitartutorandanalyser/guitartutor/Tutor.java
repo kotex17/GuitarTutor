@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -37,11 +38,13 @@ public class Tutor extends AppCompatActivity {
 
     AudioRecord recorder;
 
+    int recSizeInByte;
+
     boolean isSoundRecording;
     boolean isSoundPlaying;
     Button recButton;
 
-    String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec";
+    String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";
     MediaPlayer mediaPlayer;
 
     @Override
@@ -102,7 +105,8 @@ public class Tutor extends AppCompatActivity {
             isSoundRecording = false;
         }
 
-       // createWaveFromAudioRecord();
+        updateWavHeader();
+        // createWaveFromAudioRecord();
     }
 
   /*  private void createWaveFromAudioRecord() {
@@ -138,6 +142,7 @@ public class Tutor extends AppCompatActivity {
                 writeAudioDataToFile();
             }
         }, "AudioRecorder Thread");
+
         recordAudioThread.start();
     }
 
@@ -147,7 +152,10 @@ public class Tutor extends AppCompatActivity {
         short sData[] = new short[BUFFER_SIZE];
 
         try {
-            FileOutputStream os = new FileOutputStream(PATH_NAME);
+            // first create a file with dummy wav header
+
+            FileOutputStream outStream = new FileOutputStream(PATH_NAME);
+            outStream.write(createWavHeader());
 
             while (isSoundRecording) {
                 // read audio from microphone, short format
@@ -155,10 +163,11 @@ public class Tutor extends AppCompatActivity {
 
                 // writes audio data into file from buffer
                 byte bData[] = short2byte(sData);
-                os.write(bData, 0, BUFFER_SIZE * 2);
+                outStream.write(bData, 0, BUFFER_SIZE * 2);
+                recSizeInByte += bData.length;
             }
 
-            os.close();
+            outStream.close();
         } catch (IOException e) {
             Log.d("Audio record error", e.getMessage().toString());
         }
@@ -173,47 +182,75 @@ public class Tutor extends AppCompatActivity {
             bytes[i * 2] = (byte) (sData[i] & 0x00FF); //hexadecimal 00 FF = 0000 0000 1111 1111 masking
             bytes[(i * 2) + 1] = (byte) (sData[i] >> 8); // shift 8 right,
         }
+
         return bytes;
     }
 
-    private byte[] createWavHeader(long recordedAudioLength) {
+    private byte[] createWavHeader() {
         // The default byte ordering assumed for WAVE data files is little-endian. Files written using the big-endian byte ordering scheme have the identifier RIFX instead of RIFF.
 
         short channels = 1; //mono
         short bitsPerSample = 16; // pcm 16bit
 
-        int subchunk2Size = (int) recordedAudioLength; // int enough, recorded audio is max a few minutes
-        int chunkSize = (int) (recordedAudioLength + 36); //wave file header is 44 bytes, first 4 is ChunkId, second 4 bytes are ChunkSize: 44 - 8 = 36 bytes
+        //   int subchunk2Size = (int) recordedAudioLength; // int enough, recorded audio is max a few minutes
+        //   int chunkSize = (int) (recordedAudioLength + 36); //wave file header is 44 bytes, first 4 is ChunkId, second 4 bytes are ChunkSize: 44 - 8 = 36 bytes
 
         byte[] headerBytes = ByteBuffer
-                .allocate(22)
+                .allocate(14)
                 .order(ByteOrder.LITTLE_ENDIAN)
-                .putInt(chunkSize)
                 .putShort(channels)
                 .putInt(SAMPLE_RATE)
                 .putInt(SAMPLE_RATE * channels * (bitsPerSample / 8))
                 .putShort((short) (channels * (bitsPerSample / 8)))
                 .putShort(bitsPerSample)
-                .putInt((subchunk2Size))
                 .array();
 
         byte[] header = new byte[]{
                 'R', 'I', 'F', 'F', // ChunkID
-                headerBytes[0], headerBytes[1], headerBytes[2], headerBytes[3], // ChunkSize
+                0, 0, 0, 0, // ChunkSize
                 'W', 'A', 'V', 'E', // Format
                 'f', 'm', 't', ' ', // Subchunk1ID
                 16, 0, 0, 0, // Subchunk1Size
                 1, 0, // audioformat: 1=PCM
-                headerBytes[4], headerBytes[5], // No. of channels 1= mono, 2 = stereo
-                headerBytes[6], headerBytes[7], headerBytes[8], headerBytes[9], // SampleRate
-                headerBytes[10], headerBytes[11], headerBytes[12], headerBytes[13], // ByteRate
-                headerBytes[14], headerBytes[15], // BlockAlign
-                headerBytes[16], headerBytes[17], // BitsPerSample
+                headerBytes[0], headerBytes[1], // No. of channels 1= mono, 2 = stereo
+                headerBytes[2], headerBytes[3], headerBytes[4], headerBytes[5], // SampleRate
+                headerBytes[6], headerBytes[7], headerBytes[8], headerBytes[9], // ByteRate
+                headerBytes[10], headerBytes[11], // BlockAlign
+                headerBytes[12], headerBytes[13], // BitsPerSample
                 'd', 'a', 't', 'a', // Subchunk2ID
-                headerBytes[18], headerBytes[19], headerBytes[20], headerBytes[21] // Subchunk2Size
+                0, 0, 0, 0 // Subchunk2Size
         };
 
+        recSizeInByte += header.length;
+
         return header;
+    }
+
+    private void updateWavHeader() {
+
+        byte[] bytesToUpdate = ByteBuffer
+                .allocate(8)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .putInt(recSizeInByte - 8) // ChunkSize
+                .putInt(recSizeInByte - 44) // Subchunk2Size
+                .array();
+
+        try {
+            RandomAccessFile randomAccesFile = new RandomAccessFile(PATH_NAME, "rw");
+
+            randomAccesFile.seek(4);
+            randomAccesFile.write(bytesToUpdate, 0, 4);
+
+            randomAccesFile.seek(40);
+            randomAccesFile.write(bytesToUpdate, 4, 4);
+
+            randomAccesFile.close();
+
+        } catch (IOException e) {
+
+        }
+
+
     }
 
     private void analyseRecord() {
