@@ -11,9 +11,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import java.io.FileNotFoundException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
@@ -38,7 +41,7 @@ public class Tutor extends AppCompatActivity {
     boolean isSoundPlaying;
     Button recButton;
 
-    String PATH_NAME = Environment.getExternalStorageDirectory().getAbsolutePath() + "GuitarTutorRec";
+    String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec";
     MediaPlayer mediaPlayer;
 
     @Override
@@ -59,9 +62,17 @@ public class Tutor extends AppCompatActivity {
     }
 
     public void onButtonAnalyseClick(View v) {
-
         analyseRecord();
     }
+
+    public void onButtonRecClick(View v) {
+        startRecording();
+    }
+
+    public void onButtonStopClick(View v) {
+        stopRecording();
+    }
+
 
     private void stopPlay() {
 
@@ -81,8 +92,37 @@ public class Tutor extends AppCompatActivity {
 
     }
 
+    private void stopRecording() {
 
-    private void recPCM() {
+        if (recorder != null) {
+
+            recorder.stop();
+            recorder.release();
+            recorder = null;
+            isSoundRecording = false;
+        }
+
+       // createWaveFromAudioRecord();
+    }
+
+  /*  private void createWaveFromAudioRecord() {
+
+        File recordedAudio = new File(PATH_NAME);
+
+        try {
+            FileInputStream is = new FileInputStream(PATH_NAME);
+            is.read();
+
+            FileOutputStream os = new FileOutputStream(PATH_NAME + ".wav");
+            os.write(createWavHeader(recordedAudio.length()));
+
+
+        } catch (Exception e) {
+
+        }
+    }*/
+
+    private void startRecording() {
 
         recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
                 SAMPLE_RATE,
@@ -92,13 +132,9 @@ public class Tutor extends AppCompatActivity {
         recorder.startRecording();
         isSoundRecording = true;
 
-        System.out.println("rec started");
-
         Thread recordAudioThread = new Thread(new Runnable() {
 
             public void run() {
-
-                System.out.println("thread running");
                 writeAudioDataToFile();
             }
         }, "AudioRecorder Thread");
@@ -114,45 +150,18 @@ public class Tutor extends AppCompatActivity {
             FileOutputStream os = new FileOutputStream(PATH_NAME);
 
             while (isSoundRecording) {
-                // gets the voice output from microphone to byte format
+                // read audio from microphone, short format
                 recorder.read(sData, 0, BUFFER_SIZE);
 
-                // writes the data to file from buffer stores the voice buffer
+                // writes audio data into file from buffer
                 byte bData[] = short2byte(sData);
                 os.write(bData, 0, BUFFER_SIZE * 2);
             }
 
             os.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.d("Audio record error", e.getMessage().toString());
         }
-
-       /* FileOutputStream os;
-        try {
-            os = new FileOutputStream(PATH_NAME);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        while (isSoundRecording) {
-            // gets the voice output from microphone to byte format
-            recorder.read(sData, 0, BUFFER_SIZE);
-
-            try {
-                // writes the data to file from buffer stores the voice buffer
-                byte bData[] = short2byte(sData);
-                os.write(bData, 0, BUFFER_SIZE * 2);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        try {
-            os.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
     }
 
     private byte[] short2byte(short[] sData) {
@@ -167,28 +176,48 @@ public class Tutor extends AppCompatActivity {
         return bytes;
     }
 
-    private void stopRecording() {
-        // stops the recording activity
-        if (recorder != null) {
+    private byte[] createWavHeader(long recordedAudioLength) {
+        // The default byte ordering assumed for WAVE data files is little-endian. Files written using the big-endian byte ordering scheme have the identifier RIFX instead of RIFF.
 
-            recorder.stop();
-            recorder.release();
-            recorder = null;
+        short channels = 1; //mono
+        short bitsPerSample = 16; // pcm 16bit
 
-            isSoundRecording = false;
-        }
+        int subchunk2Size = (int) recordedAudioLength; // int enough, recorded audio is max a few minutes
+        int chunkSize = (int) (recordedAudioLength + 36); //wave file header is 44 bytes, first 4 is ChunkId, second 4 bytes are ChunkSize: 44 - 8 = 36 bytes
 
+        byte[] headerBytes = ByteBuffer
+                .allocate(22)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .putInt(chunkSize)
+                .putShort(channels)
+                .putInt(SAMPLE_RATE)
+                .putInt(SAMPLE_RATE * channels * (bitsPerSample / 8))
+                .putShort((short) (channels * (bitsPerSample / 8)))
+                .putShort(bitsPerSample)
+                .putInt((subchunk2Size))
+                .array();
 
-        try {
+        byte[] header = new byte[]{
+                'R', 'I', 'F', 'F', // ChunkID
+                headerBytes[0], headerBytes[1], headerBytes[2], headerBytes[3], // ChunkSize
+                'W', 'A', 'V', 'E', // Format
+                'f', 'm', 't', ' ', // Subchunk1ID
+                16, 0, 0, 0, // Subchunk1Size
+                1, 0, // audioformat: 1=PCM
+                headerBytes[4], headerBytes[5], // No. of channels 1= mono, 2 = stereo
+                headerBytes[6], headerBytes[7], headerBytes[8], headerBytes[9], // SampleRate
+                headerBytes[10], headerBytes[11], headerBytes[12], headerBytes[13], // ByteRate
+                headerBytes[14], headerBytes[15], // BlockAlign
+                headerBytes[16], headerBytes[17], // BitsPerSample
+                'd', 'a', 't', 'a', // Subchunk2ID
+                headerBytes[18], headerBytes[19], headerBytes[20], headerBytes[21] // Subchunk2Size
+        };
 
-            //  audioDispatcherPitch();
-        } catch (Exception e) {
-
-        }
+        return header;
     }
 
     private void analyseRecord() {
-        Log.d("ELINDULT", "elindultam");
+        Log.d("started analyse", "started analysing");
         new AndroidFFMPEGLocator(this);
 
         int SAMPLE_RATE = 44100;
