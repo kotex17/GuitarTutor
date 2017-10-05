@@ -34,7 +34,7 @@ public class Tutor extends AppCompatActivity {
 
     final int BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE,
             AudioFormat.CHANNEL_IN_MONO,
-            AudioFormat.ENCODING_PCM_16BIT);
+            AudioFormat.ENCODING_PCM_16BIT)/2;
 
     AudioRecord recorder;
 
@@ -77,6 +77,7 @@ public class Tutor extends AppCompatActivity {
     }
 
 
+
     private void stopPlay() {
 
         mediaPlayer.stop();
@@ -94,37 +95,6 @@ public class Tutor extends AppCompatActivity {
         recButton.setText("Stop");
 
     }
-
-    private void stopRecording() {
-
-        if (recorder != null) {
-
-            recorder.stop();
-            recorder.release();
-            recorder = null;
-            isSoundRecording = false;
-        }
-
-        updateWavHeader();
-        // createWaveFromAudioRecord();
-    }
-
-  /*  private void createWaveFromAudioRecord() {
-
-        File recordedAudio = new File(PATH_NAME);
-
-        try {
-            FileInputStream is = new FileInputStream(PATH_NAME);
-            is.read();
-
-            FileOutputStream os = new FileOutputStream(PATH_NAME + ".wav");
-            os.write(createWavHeader(recordedAudio.length()));
-
-
-        } catch (Exception e) {
-
-        }
-    }*/
 
     private void startRecording() {
 
@@ -224,6 +194,20 @@ public class Tutor extends AppCompatActivity {
         recSizeInByte += header.length;
 
         return header;
+    }
+
+
+    private void stopRecording() {
+
+        if (recorder != null) {
+
+            recorder.stop();
+            recorder.release();
+            recorder = null;
+            isSoundRecording = false;
+        }
+
+        updateWavHeader();
     }
 
     private void updateWavHeader() {
