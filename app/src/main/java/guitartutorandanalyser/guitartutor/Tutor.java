@@ -1,23 +1,40 @@
 package guitartutorandanalyser.guitartutor;
 
 import android.media.AudioFormat;
+import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.media.SoundPool;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.view.menu.ExpandedMenuView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
@@ -31,27 +48,31 @@ public class Tutor extends AppCompatActivity {
 
 
     final int SAMPLE_RATE = 44100;
-
+    final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";   // "/chromatic_scale_a_90bpm.wav";
     final int BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE,
             AudioFormat.CHANNEL_IN_MONO,
-            AudioFormat.ENCODING_PCM_16BIT)/2;
-
-    AudioRecord recorder;
+            AudioFormat.ENCODING_PCM_16BIT) / 2;
 
     int recSizeInByte;
-
     boolean isSoundRecording;
     boolean isSoundPlaying;
-    Button recButton;
 
-    String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";
+    Button recButton;
+    AudioRecord recorder;
     MediaPlayer mediaPlayer;
+    Handler handler;
+
+    RadioButton metronome;
+
+
+    int tempTempo = 40;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tutor);
 
+        metronome = (RadioButton) findViewById(R.id.metronomeButton);
         recButton = (Button) findViewById(R.id.button_play_stop);
     }
 
@@ -77,7 +98,6 @@ public class Tutor extends AppCompatActivity {
     }
 
 
-
     private void stopPlay() {
 
         mediaPlayer.stop();
@@ -89,14 +109,14 @@ public class Tutor extends AppCompatActivity {
 
     private void startPlay() {
 
-        mediaPlayer = MediaPlayer.create(this, R.raw.testacd);
+        mediaPlayer = MediaPlayer.create(this, R.raw.chromatic_scale_a_90bpm);
         mediaPlayer.start();
         isSoundPlaying = true;
         recButton.setText("Stop");
 
     }
 
-    private void startRecording() {
+    private void startRecording() { // creates new audio recorder instance, start it, new recording thread and new metronome
 
         recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
                 SAMPLE_RATE,
@@ -113,7 +133,64 @@ public class Tutor extends AppCompatActivity {
             }
         }, "AudioRecorder Thread");
 
+
+        playPreCount();
+
         recordAudioThread.start();
+
+        startMetronome();
+    }
+
+    private void playPreCount() {
+
+        SoundPool soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC,0);
+        int soundId = soundPool.load(getApplicationContext(),R.raw.metronome_click,1);
+
+        float tick = (60f / tempTempo) * 1000;
+
+        for (int i = 0; i < 4; i++) {
+
+            long time1 = SystemClock.elapsedRealtime();
+            soundPool.play(soundId,0.5f,0.5f,1,1,1);
+
+            while (SystemClock.elapsedRealtime() - time1 <= tick) {
+                // waiting ...
+            }
+        }
+    }
+
+    private void startMetronome() {
+
+        final float tick2 = (60f / tempTempo) * 1000; //tempo means beats per minute, calculate milliseconds between ticks
+
+        handler = new Handler(getApplicationContext().getMainLooper());
+
+        Thread startMetronome = new Thread(new Runnable() {
+
+            public void run() {
+
+                long tickMilliSeconds = (long) tick2;  // Thread.sleep() 2 params: milliseconds  long, nanoseconds  int
+                float calculateNanoseconds = (tick2 - (int) tick2) * 1000000;  // milli = 10^-3, nano = 10^-9, difference is 10^6 = 1000000
+                int tickNanoSeconds = (int) calculateNanoseconds;
+
+                while (isSoundRecording) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            metronome.setChecked(!metronome.isChecked());
+                        }
+                    });
+                    try {
+                        Thread.currentThread().sleep(tickMilliSeconds, tickNanoSeconds);
+                    } catch (InterruptedException e) {
+                        Log.d("Metronome thread error", e.getMessage());
+                    }
+                }
+
+            }
+        }, "Metronome Thread");
+
+        startMetronome.start();
     }
 
     private void writeAudioDataToFile() {
@@ -241,36 +318,108 @@ public class Tutor extends AppCompatActivity {
         Log.d("started analyse", "started analysing");
         new AndroidFFMPEGLocator(this);
 
-        int SAMPLE_RATE = 44100;
-
-        int bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE,
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
+                SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT);
+                AudioFormat.ENCODING_PCM_16BIT, BUFFER_SIZE);
 
+        final AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(PATH_NAME, SAMPLE_RATE, BUFFER_SIZE / 2, 0);
 
-        AudioRecord record =
-                new AudioRecord(MediaRecorder.AudioSource.MIC,
-                        SAMPLE_RATE,
-                        AudioFormat.CHANNEL_IN_MONO,
-                        AudioFormat.ENCODING_PCM_16BIT, bufferSize);
+        File f = new File(Environment.getExternalStorageDirectory() + "/map2.txt");
 
-        AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(PATH_NAME, SAMPLE_RATE, bufferSize / 2, 0);
+        if (f.exists())
+            f.delete();
 
-        dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.DYNAMIC_WAVELET, SAMPLE_RATE, bufferSize / 2, new PitchDetectionHandler() {
+        dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, SAMPLE_RATE, BUFFER_SIZE / 2, new PitchDetectionHandler() {
 
             @Override
             public void handlePitch(PitchDetectionResult pitchDetectionResult,
                                     AudioEvent audioEvent) {
                 final float pitchInHz = pitchDetectionResult.getPitch();
+
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Log.d("pitch detected: ", String.valueOf(pitchInHz));
+                        try {
+                            FileWriter fw = new FileWriter(Environment.getExternalStorageDirectory() + "/map2.txt", true);
+                            fw.write(String.valueOf(pitchInHz) + "\n");
+                            fw.close();
+
+                        } catch (Exception e) {
+
+                        }
                     }
                 });
-
             }
         }));
-        new Thread(dispatcher, "Audio Dispatcher").start();
+
+        Thread analyseThread = new Thread(dispatcher, "Audio Dispatcher");
+        analyseThread.start();
+
+        while (analyseThread.getState() != Thread.State.TERMINATED) {
+        }
+        Toast.makeText(this, "Anayse finished", Toast.LENGTH_SHORT).show();
+
+        getAnalyseResult();
+
+
+    }
+
+    private void getAnalyseResult() {
+        Log.d("COMPAREAA ", " ß ");
+        try {
+            BufferedReader br1 = new BufferedReader(new FileReader(Environment.getExternalStorageDirectory() + "/map1.txt"));
+
+
+            List<String> lines1 = new ArrayList<String>();
+
+
+            String line1 = "";
+
+            while (((line1 = br1.readLine()) != null)) {
+                lines1.add(line1);
+                //  lines2.add(line2);
+            }
+
+
+            //  && ((line2 = br2.readLine()) != null))
+            br1.close();
+            Log.d("COMPAREAA ", " ¤ß$ ");
+            BufferedReader br2 = new BufferedReader(new FileReader(Environment.getExternalStorageDirectory() + "/map2.txt"));
+
+            List<String> lines2 = new ArrayList<String>();
+            String line2 = "";
+
+            while (((line2 = br2.readLine()) != null)) {
+                //lines1.add(line1);
+                lines2.add(line2);
+            }
+
+            br2.close();
+
+            char[] line1Array = line1.toCharArray();
+            char[] line2Array = line2.toCharArray();
+
+            int equal = 0;
+            int error = 0;
+
+            // lenght of the two arrays are the same at this point
+            for (int i = 0; i < line1Array.length; i++) {
+
+                if (line1Array[i] == line2Array[i]) {
+                    equal++;
+                } else {
+                    error++;
+                }
+                Log.d("COMPAREAA ", line1Array[i] + " ß " + line2Array[i]);
+            }
+
+            Toast.makeText(this, "equal: " + String.valueOf(equal) + " ß " + "error: " + String.valueOf(error), Toast.LENGTH_LONG);
+        } catch (Exception e) {
+            Log.d("COMPAREAA ", "ERROR");
+            Log.d("COMPAREAA", e.getMessage());
+        }
+
     }
 }
