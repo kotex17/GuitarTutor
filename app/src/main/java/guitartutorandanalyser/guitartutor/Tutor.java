@@ -15,6 +15,7 @@ import android.support.v7.view.menu.ExpandedMenuView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
@@ -32,9 +33,6 @@ import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
@@ -74,6 +72,8 @@ public class Tutor extends AppCompatActivity {
 
         metronome = (RadioButton) findViewById(R.id.metronomeButton);
         recButton = (Button) findViewById(R.id.button_play_stop);
+        ImageView imageView = (ImageView) findViewById(R.id.imageView_tab);
+        imageView.setImageResource(R.drawable.orarend);
     }
 
     public void onButtonPlayClick(View v) {
