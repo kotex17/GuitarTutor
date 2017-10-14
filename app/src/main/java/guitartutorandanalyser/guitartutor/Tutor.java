@@ -70,6 +70,9 @@ public class Tutor extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tutor);
 
+        String s = getIntent().getStringExtra("lessonId");
+        Log.d("LESSON ID TO TUTOR", s);
+
         metronome = (RadioButton) findViewById(R.id.metronomeButton);
         recButton = (Button) findViewById(R.id.button_play_stop);
         ImageView imageView = (ImageView) findViewById(R.id.imageView_tab);

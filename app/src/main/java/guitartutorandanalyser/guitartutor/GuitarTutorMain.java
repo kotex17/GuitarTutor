@@ -19,7 +19,9 @@ public class GuitarTutorMain extends AppCompatActivity {
 
         // on first run a db is created on the system for songs and lessons, method checks first if database already exists
         try {
-            new DatabaseHelper(this).createDataBase();
+           DatabaseHelper dbh = new DatabaseHelper(this);
+            dbh.createDataBase();
+
         } catch (IOException e) {
             e.printStackTrace();
         }

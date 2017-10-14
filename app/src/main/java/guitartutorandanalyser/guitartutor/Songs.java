@@ -22,6 +22,7 @@ import java.util.Set;
 public class Songs extends AppCompatActivity {
 
     private ListView listView;
+    ArrayMap<String, String> idToSongName = new ArrayMap<String, String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,11 +31,11 @@ public class Songs extends AppCompatActivity {
 
         listView = (ListView) findViewById(R.id.songsListView);
 
-        populateListView();
+        idToSongName = populateListView();
         onListItemClick();
     }
 
-    private void populateListView() {
+    private ArrayMap<String, String> populateListView() {
 
         ArrayMap<String, String> idToSongName = fetchDatabase();
 
@@ -52,6 +53,8 @@ public class Songs extends AppCompatActivity {
         );
 
         listView.setAdapter(adapter);
+
+        return idToSongName;
     }
 
     private ArrayMap<String, String> fetchDatabase() {
@@ -77,14 +80,15 @@ public class Songs extends AppCompatActivity {
         return idToSongName;
     }
 
-
     private void onListItemClick() {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
-                TextView textView = (TextView) viewClicked;
 
-                startActivity(new Intent("guitartutorandanalyser.guitartutor.Tutor"));
+                Intent tutorIntent = new Intent("guitartutorandanalyser.guitartutor.Tutor");
+                tutorIntent.putExtra("lessonId",idToSongName.keyAt(position));
+                startActivity(tutorIntent);
+
             }
         });
     }
