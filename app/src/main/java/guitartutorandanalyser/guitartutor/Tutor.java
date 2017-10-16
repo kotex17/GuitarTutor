@@ -1,5 +1,6 @@
 package guitartutorandanalyser.guitartutor;
 
+import android.database.Cursor;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
@@ -12,6 +13,7 @@ import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.view.menu.ExpandedMenuView;
+import android.util.ArrayMap;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -62,8 +64,9 @@ public class Tutor extends AppCompatActivity {
 
     RadioButton metronome;
 
-
     int tempTempo = 40;
+
+    HomeWork homework;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +74,9 @@ public class Tutor extends AppCompatActivity {
         setContentView(R.layout.activity_tutor);
 
         String s = getIntent().getStringExtra("lessonId");
-        Log.d("LESSON ID TO TUTOR", s);
+        fetchCurrentHomework(Integer.parseInt(s));
+
+        Log.d("HOMEWORK DATA ", homework.getName() + " "+ homework.getType()+" "+homework.getBpm());
 
         metronome = (RadioButton) findViewById(R.id.metronomeButton);
         recButton = (Button) findViewById(R.id.button_play_stop);
@@ -146,15 +151,15 @@ public class Tutor extends AppCompatActivity {
 
     private void playPreCount() {
 
-        SoundPool soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC,0);
-        int soundId = soundPool.load(getApplicationContext(),R.raw.metronome_click,1);
+        SoundPool soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 0);
+        int soundId = soundPool.load(getApplicationContext(), R.raw.metronome_click, 1);
 
         float tick = (60f / tempTempo) * 1000;
 
         for (int i = 0; i < 4; i++) {
 
             long time1 = SystemClock.elapsedRealtime();
-            soundPool.play(soundId,0.5f,0.5f,1,1,1);
+            soundPool.play(soundId, 0.5f, 0.5f, 1, 1, 1);
 
             while (SystemClock.elapsedRealtime() - time1 <= tick) {
                 // waiting ...
@@ -423,6 +428,52 @@ public class Tutor extends AppCompatActivity {
             Log.d("COMPAREAA ", "ERROR");
             Log.d("COMPAREAA", e.getMessage());
         }
+
+    }
+
+    private void fetchCurrentHomework(int id) {
+
+        DatabaseHelper db = new DatabaseHelper(this);
+        try {
+            db.openDataBase();
+        } catch (Exception e) {
+
+        }
+
+        Cursor cursor = db.myDataBase.query(
+                DatabaseHelper.TABLE_HOMEWORKS,
+                new String[]{DatabaseHelper.Column.ID,
+                        DatabaseHelper.Column.TYPE,
+                        DatabaseHelper.Column.NAME,
+                        DatabaseHelper.Column.BPM,
+                        DatabaseHelper.Column.BEATS,
+                        DatabaseHelper.Column.RECORDPOINT,
+                        DatabaseHelper.Column.RECORDDATE,
+                        DatabaseHelper.Column.COMPLETED,
+                        DatabaseHelper.Column.MAP,
+                        DatabaseHelper.Column.TABID,
+                        DatabaseHelper.Column.SONGID},
+                DatabaseHelper.Column.ID + " = ?",
+                new String[]{String.valueOf(id)},
+                null, null, null, "1"); // LIMIT 1
+
+        if (cursor.moveToFirst()) {
+            this.homework = HomeWork.homeWorkCreator(
+                    cursor.getInt(0),
+                    cursor.getString(1),
+                    cursor.getString(2),
+                    cursor.getInt(3),
+                    cursor.getInt(4),
+                    cursor.getInt(5),
+                    cursor.getString(6),
+                    cursor.getInt(7),
+                    cursor.getString(8),
+                    cursor.getInt(9),
+                    cursor.getInt(10));
+        }
+
+        cursor.close();
+        db.close();
 
     }
 }

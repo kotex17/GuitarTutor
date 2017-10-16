@@ -20,6 +20,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private final Context context;
 
     public SQLiteDatabase myDataBase;
+    public static final String TABLE_HOMEWORKS = "homeworks";
+
+    class Column {
+        public static final String ID = "_id";
+        public static final String TYPE = "type";
+        public static final String NAME = "name";
+        public static final String BPM = "bpm";
+        public static final String BEATS = "beats";
+        public static final String RECORDPOINT = "recordpoint";
+        public static final String RECORDDATE = "recorddate";
+        public static final String COMPLETED = "completed";
+        public static final String MAP = "map";
+        public static final String TABID = "tabid";
+        public static final String SONGID = "songid";
+    }
+
+
+
+
 
     public DatabaseHelper(Context context) {
 

@@ -66,7 +66,7 @@ public class Songs extends AppCompatActivity {
 
         }
 
-        Cursor cursor = db.myDataBase.query("homeworks", new String[]{"_id", "type", "name"}, "type = ?", new String[]{"song"}, null, null, null);
+        Cursor cursor = db.myDataBase.query(DatabaseHelper.TABLE_HOMEWORKS, new String[]{DatabaseHelper.Column.ID, DatabaseHelper.Column.TYPE, DatabaseHelper.Column.NAME}, DatabaseHelper.Column.TYPE + " = ?", new String[]{"song"}, null, null, null);
 
         ArrayMap<String, String> idToSongName = new ArrayMap<String, String>();
 
