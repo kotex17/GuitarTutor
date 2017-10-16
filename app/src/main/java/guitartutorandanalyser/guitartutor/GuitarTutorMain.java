@@ -21,6 +21,7 @@ public class GuitarTutorMain extends AppCompatActivity {
         try {
            DatabaseHelper dbh = new DatabaseHelper(this);
             dbh.createDataBase();
+         //   dbh.UPDATE_DB_toDelete();
 
         } catch (IOException e) {
             e.printStackTrace();

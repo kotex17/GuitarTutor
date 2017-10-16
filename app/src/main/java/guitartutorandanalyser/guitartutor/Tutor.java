@@ -1,5 +1,6 @@
 package guitartutorandanalyser.guitartutor;
 
+import android.app.ProgressDialog;
 import android.database.Cursor;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -18,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
@@ -53,6 +55,7 @@ public class Tutor extends AppCompatActivity {
             AudioFormat.CHANNEL_IN_MONO,
             AudioFormat.ENCODING_PCM_16BIT) / 2;
 
+
     int recSizeInByte;
     boolean isSoundRecording;
     boolean isSoundPlaying;
@@ -64,7 +67,9 @@ public class Tutor extends AppCompatActivity {
 
     RadioButton metronome;
 
-    int tempTempo = 40;
+    int tempTempo = 90;
+
+    SoundAnalysator soundAnalysator;
 
     HomeWork homework;
 
@@ -76,7 +81,8 @@ public class Tutor extends AppCompatActivity {
         String s = getIntent().getStringExtra("lessonId");
         fetchCurrentHomework(Integer.parseInt(s));
 
-        Log.d("HOMEWORK DATA ", homework.getName() + " "+ homework.getType()+" "+homework.getBpm());
+        Log.d("HOMEWORK DATA ", homework.getName() + " " + homework.getType() + " " + homework.getBpm());
+        Log.d("chromatic scale soindid", String.valueOf(R.raw.chromatic_scale_a_90bpm));
 
         metronome = (RadioButton) findViewById(R.id.metronomeButton);
         recButton = (Button) findViewById(R.id.button_play_stop);
@@ -117,7 +123,7 @@ public class Tutor extends AppCompatActivity {
 
     private void startPlay() {
 
-        mediaPlayer = MediaPlayer.create(this, R.raw.chromatic_scale_a_90bpm);
+        mediaPlayer = MediaPlayer.create(this, homework.getSoundId());
         mediaPlayer.start();
         isSoundPlaying = true;
         recButton.setText("Stop");
@@ -151,7 +157,7 @@ public class Tutor extends AppCompatActivity {
 
     private void playPreCount() {
 
-        SoundPool soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 0);
+        SoundPool soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0); // 4, AudioManager.STREAM_MUSIC, 0);
         int soundId = soundPool.load(getApplicationContext(), R.raw.metronome_click, 1);
 
         float tick = (60f / tempTempo) * 1000;
@@ -323,8 +329,19 @@ public class Tutor extends AppCompatActivity {
     }
 
     private void analyseRecord() {
-        Log.d("started analyse", "started analysing");
-        new AndroidFFMPEGLocator(this);
+
+        soundAnalysator = new SoundAnalysator(homework);
+        soundAnalysator.analyseRecord(SAMPLE_RATE, BUFFER_SIZE, PATH_NAME);
+
+        ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
+        pb.setVisibility(View.VISIBLE);
+
+        soundAnalysator.compareResult(); // not implemented ye
+
+//////////// created clas to do this work 2017.10.16.
+      /*  Toast.makeText(this, "Analyse started", Toast.LENGTH_SHORT).show();
+
+        //new AndroidFFMPEGLocator(this);
 
         recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
                 SAMPLE_RATE,
@@ -333,10 +350,14 @@ public class Tutor extends AppCompatActivity {
 
         final AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(PATH_NAME, SAMPLE_RATE, BUFFER_SIZE / 2, 0);
 
-        File f = new File(Environment.getExternalStorageDirectory() + "/map2.txt");
+     /*   File f = new File(Environment.getExternalStorageDirectory() + "/test.txt");
 
         if (f.exists())
-            f.delete();
+            f.delete();*/
+
+
+/*
+
 
         dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, SAMPLE_RATE, BUFFER_SIZE / 2, new PitchDetectionHandler() {
 
@@ -345,31 +366,32 @@ public class Tutor extends AppCompatActivity {
                                     AudioEvent audioEvent) {
                 final float pitchInHz = pitchDetectionResult.getPitch();
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d("pitch detected: ", String.valueOf(pitchInHz));
-                        try {
-                            FileWriter fw = new FileWriter(Environment.getExternalStorageDirectory() + "/map2.txt", true);
-                            fw.write(String.valueOf(pitchInHz) + "\n");
-                            fw.close();
+                try {
 
-                        } catch (Exception e) {
+                    /*FileWriter fw = new FileWriter(Environment.getExternalStorageDirectory() + "/test.txt", true);
+                    fw.write(String.valueOf(pitchInHz) + ";");
+                    fw.close();*/
+   /*                 Log.d("szerintem igy is muxik", String.valueOf(pitchInHz));
 
-                        }
-                    }
-                });
+                } catch (Exception e) {
+
+                }
             }
         }));
 
         Thread analyseThread = new Thread(dispatcher, "Audio Dispatcher");
         analyseThread.start();
 
-        while (analyseThread.getState() != Thread.State.TERMINATED) {
-        }
-        Toast.makeText(this, "Anayse finished", Toast.LENGTH_SHORT).show();
+        ProgressBar pb  = (ProgressBar)findViewById(R.id.progressBar);
 
-        getAnalyseResult();
+        pb.setVisibility(View.VISIBLE);*/
+       /* while (analyseThread.getState() != Thread.State.TERMINATED) {
+
+        }*/
+        //   Toast.makeText(this, "Anayse finished", Toast.LENGTH_SHORT).show();
+
+
+        //  getAnalyseResult();
 
 
     }
