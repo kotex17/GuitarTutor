@@ -94,7 +94,7 @@ public class Lessons extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
 
                 Intent tutorIntent = new Intent("guitartutorandanalyser.guitartutor.Tutor");
-                tutorIntent.putExtra("lessonId", idToLessonName_exp.keyAt(position));
+                tutorIntent.putExtra("homeWorkId", idToLessonName_exp.keyAt(position));
                 startActivity(tutorIntent);
             }
         });

@@ -1,15 +1,17 @@
 package guitartutorandanalyser.guitartutor;
 
-import android.media.AudioFormat;
-import android.media.AudioRecord;
-import android.media.MediaRecorder;
+
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
+import be.tarsos.dsp.io.android.AndroidFFMPEGLocator;
 import be.tarsos.dsp.io.android.AudioDispatcherFactory;
 import be.tarsos.dsp.pitch.PitchDetectionHandler;
 import be.tarsos.dsp.pitch.PitchDetectionResult;
@@ -21,26 +23,20 @@ public class SoundAnalyser {
     private final String MAP_FILE_NAME = "/guitarTutorMap.txt";
     File mapFile = new File(Environment.getExternalStorageDirectory() + MAP_FILE_NAME);
     private HomeWork currentHomeWork;
-    private String map ="";
+    private String map = "";
 
-    public SoundAnalyser(HomeWork homework){
+    public SoundAnalyser(HomeWork homework) {
         this.currentHomeWork = homework;
     }
 
-    public void analyseRecord(int SAMPLE_RATE, int BUFFER_SIZE, String PATH_NAME) {
+    public void analyseRecord(int SAMPLE_RATE, int BUFFER_SIZE, String PATH_NAME, Context ctx) {
 
-        //new AndroidFFMPEGLocator(this);
+        new AndroidFFMPEGLocator(ctx);
 
+        final AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(PATH_NAME, SAMPLE_RATE, BUFFER_SIZE / 2, 0);  //   BUFFER_SIZE / 2 is ineccessary?? need some test!!!
 
-        AudioRecord recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT, BUFFER_SIZE);
-
-        final AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(PATH_NAME, SAMPLE_RATE, BUFFER_SIZE / 2, 0);
-
-        if (mapFile.exists())
-            mapFile.delete();
+      /*  if (mapFile.exists())
+            mapFile.delete();*/
 
         // audiofactory(from pipe, wav header is ignored, pcm samples captured) ---> audiodispathcer(plays a file and sends float arrays to registered AudioProcessor )
         // AudioProcessor = PitchProcessor, PitchdetectionHandler = Interface( handlePitch())
@@ -58,8 +54,8 @@ public class SoundAnalyser {
                     fw.write(String.valueOf(pitchInHz) + ";");
                     fw.close();*/
 
-                    map = getMap() + String.valueOf(pitchInHz)+';';
-                    Log.d("mapban is muxik?", map);
+                    map = getMap() + String.valueOf(pitchInHz) + ';';
+
 
                 } catch (Exception e) {
 
@@ -67,18 +63,92 @@ public class SoundAnalyser {
             }
         }));
 
-        Thread analyseThread = new Thread(dispatcher, "Audio Dispatcher");
-        analyseThread.start();
 
+        Thread audioDispathcerThread = new Thread(dispatcher, "Audio Dispatcher");
+        audioDispathcerThread.start();
 
-        /*while (analyseThread.getState() != Thread.State.TERMINATED) {
+        compareResult(audioDispathcerThread);
 
-        }*/
     }
 
-    public void compareResult() {
-        // compare currentHomework.map with the created mapFile :)
+    public void compareResult(Thread audioDispathcerThread) {
 
+        final Thread threadToWaitFor = audioDispathcerThread;
+
+        Thread compareThread = new Thread(new Runnable() {
+
+            public void run() {
+
+                try {
+                    threadToWaitFor.join();
+                    int[] intPitchMapHomeWork = getIntPitchMap(currentHomeWork.getMap());
+                    int[] intPitchMapRecord = getIntPitchMap(map);
+
+                    Log.d("hosszak: ", intPitchMapHomeWork.length + "  -  " + intPitchMapRecord.length);
+                    int result = compareIntPitchMaps(intPitchMapHomeWork,intPitchMapRecord);
+                    Log.d("eredmeny: ",String.valueOf(result)+"%");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+
+                }
+            }
+        }, "Compare Thread");
+        compareThread.start();
+
+    }
+
+    private int[] getIntPitchMap(String map) throws Exception {
+
+
+        int countDetectedPitches = map.length() - map.replace(";", "").length();
+
+        int[] intPitchMap = new int[countDetectedPitches];
+
+        int pitchMapIndex = 0;
+        String onePitch = "";
+
+        for (int i = 0; i < map.length(); i++) {
+
+            char c = map.charAt(i);
+
+            if (c != ';') {
+                onePitch += c;
+            } else {
+
+                Log.d(" mennyi intben? ", onePitch);
+                intPitchMap[pitchMapIndex] = (int) Double.parseDouble(onePitch);
+                pitchMapIndex++;
+                onePitch = "";
+            }
+        }
+
+        return intPitchMap;
+    }
+
+    private int compareIntPitchMaps(int[] homework, int[] recorded) {
+        int result ;
+
+        int correct = 0;
+        int missed = 0;
+
+        int i = 0;
+        while (homework.length > i && recorded.length > i) {
+            int difference = homework[i] - recorded[i];
+
+            Log.d("na mit jelenz?", String.valueOf(homework[i])+"  "+String.valueOf(recorded[i])+"   "+String.valueOf(difference));
+            if (5 > difference && difference > -5) {
+                correct++;
+            }
+            else {
+                missed++;
+            }
+            i++;
+        }
+
+        result = (correct / (correct + missed))*100;
+
+        return result;
     }
 
 

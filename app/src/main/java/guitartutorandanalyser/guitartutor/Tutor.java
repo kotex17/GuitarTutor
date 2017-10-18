@@ -5,11 +5,9 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.MediaPlayer;
-import android.media.MediaRecorder;
 import android.media.SoundPool;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,12 +19,7 @@ import android.widget.RadioButton;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,37 +27,36 @@ public class Tutor extends AppCompatActivity {
 
 
     final int SAMPLE_RATE = 44100;
-    final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";   // "/chromatic_scale_a_90bpm.wav";
+    final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";
     final int BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE,
             AudioFormat.CHANNEL_IN_MONO,
             AudioFormat.ENCODING_PCM_16BIT) / 2;
 
     boolean isSoundPlaying;
 
-
-    Button recButton;
+    Button playStopButton;
     MediaPlayer mediaPlayer;
-
     RadioButton metronome;
-    HomeWork homework;
 
     SoundRecorder soundRecorder;
     SoundAnalyser soundAnalyser;
+    HomeWork homework;
+
+    Tick tick;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tutor);
 
-        String s = getIntent().getStringExtra("lessonId");
+        String s = getIntent().getStringExtra("homeWorkId");
         fetchCurrentHomework(Integer.parseInt(s));
 
-        Log.d("HOMEWORK DATA ", homework.getName() + " " + homework.getType() + " " + homework.getBpm());
+        tick = new Tick(homework.getBpm());
 
         metronome = (RadioButton) findViewById(R.id.metronomeButton);
-        recButton = (Button) findViewById(R.id.button_play_stop);
-        ImageView imageView = (ImageView) findViewById(R.id.imageView_tab);
-        imageView.setImageResource(homework.getTabId());
+        playStopButton = (Button) findViewById(R.id.button_play_stop);
+        ((ImageView) findViewById(R.id.imageView_tab)).setImageResource(homework.getTabId());
     }
 
     public void onButtonPlayClick(View v) {
@@ -94,7 +86,7 @@ public class Tutor extends AppCompatActivity {
         mediaPlayer.stop();
         mediaPlayer.release();
         isSoundPlaying = false;
-        recButton.setText("Play");
+        playStopButton.setText("Play");
 
     }
 
@@ -103,7 +95,7 @@ public class Tutor extends AppCompatActivity {
         mediaPlayer = MediaPlayer.create(this, homework.getSoundId());
         mediaPlayer.start();
         isSoundPlaying = true;
-        recButton.setText("Stop");
+        playStopButton.setText("Stop");
 
     }
 
@@ -111,11 +103,15 @@ public class Tutor extends AppCompatActivity {
 
 
         soundRecorder = new SoundRecorder();
+
         Thread recordAudioThread = soundRecorder.startRecording();
         Thread startMetronome = initializeMetronome();
+        Thread playPreCount = playPreCount();
 
-        playPreCount();
+        playPreCount.start();
+        while (playPreCount.getState() != Thread.State.TERMINATED) {
 
+        }
         recordAudioThread.start();
         startMetronome.start();
     }
@@ -123,32 +119,30 @@ public class Tutor extends AppCompatActivity {
     private void stopRecording() {
         if (soundRecorder != null)
             soundRecorder.stopRecording();
-
     }
 
-    private void playPreCount() {
+    private Thread playPreCount() {
 
-        SoundPool soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 0); // 1?????????
-        int soundId = soundPool.load(this, R.raw.metronome_click,1);
+        final SoundPool soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 0); // 1?????????
+        final int soundId = soundPool.load(this, R.raw.metronome_click, 1);
 
-        float tick = (60f / homework.getBpm()) * 1000; // calculate milliseconds between beats
+        return new Thread(new Runnable() {
+            public void run() {
 
-        for (int i = 0; i < 4; i++) {
+                for (int i = 0; i < 4; i++) {
 
-            long time1 = SystemClock.elapsedRealtime();
-            soundPool.play(soundId, 1, 1, 1, 1, 1);
-
-            while (SystemClock.elapsedRealtime() - time1 <= tick) {
-                // waiting ...
+                    soundPool.play(soundId, 1, 1, 1, 1, 1);
+                    try {
+                        Thread.currentThread().sleep(tick.milliSeconds, tick.nanoSeconds);
+                    } catch (InterruptedException e) {
+                        Log.d("PreCount thread error", e.getMessage());
+                    }
+                }
             }
-        }
+        }, "PreCount Thread");
     }
 
     private Thread initializeMetronome() {
-
-        float tick = (60f / homework.getBpm()) * 1000; //tempo means beats per minute, calculate milliseconds between ticks
-        final long tickMilliSeconds = (long) tick;  // Thread.sleep() 2 params: milliseconds  long, nanoseconds  int
-        final int tickNanoSeconds = (int) ((tick - (int) tick) * 1000000); // milli = 10^-3, nano = 10^-9, difference is 10^6 = 1000000
 
         final Handler handler = new Handler(getApplicationContext().getMainLooper());
 
@@ -156,7 +150,7 @@ public class Tutor extends AppCompatActivity {
 
             public void run() {
 
-                for(int i = 0; i < homework.getBeats() && soundRecorder.isSoundRecording(); i++)  {
+                for (int i = 0; i < homework.getBeats() && soundRecorder.isSoundRecording(); i++) {
 
                     handler.post(new Runnable() {
                         @Override
@@ -165,7 +159,7 @@ public class Tutor extends AppCompatActivity {
                         }
                     });
                     try {
-                        Thread.currentThread().sleep(tickMilliSeconds, tickNanoSeconds);
+                        Thread.currentThread().sleep(tick.milliSeconds, tick.nanoSeconds);
                     } catch (InterruptedException e) {
                         Log.d("Metronome thread error", e.getMessage());
                     }
@@ -178,72 +172,14 @@ public class Tutor extends AppCompatActivity {
     }
 
     private void analyseRecord() {
-
+        Log.d("AAA_AAA", "check0");
         soundAnalyser = new SoundAnalyser(homework);
-        soundAnalyser.analyseRecord(SAMPLE_RATE, BUFFER_SIZE, PATH_NAME);
+        soundAnalyser.analyseRecord(SAMPLE_RATE, BUFFER_SIZE, PATH_NAME, this);
 
         ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
         pb.setVisibility(View.VISIBLE);
 
-        Log.d("SOUND ANALYSER STRING",soundAnalyser.getMap());
-
-       // soundAnalyser.compareResult(); // not implemented ye
-
-//////////// created clas to do this work 2017.10.16.
-      /*  Toast.makeText(this, "Analyse started", Toast.LENGTH_SHORT).show();
-
-        //new AndroidFFMPEGLocator(this);
-
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT, BUFFER_SIZE);
-
-        final AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(PATH_NAME, SAMPLE_RATE, BUFFER_SIZE / 2, 0);
-
-     /*   File f = new File(Environment.getExternalStorageDirectory() + "/test.txt");
-
-        if (f.exists())
-            f.delete();*/
-
-
-/*
-
-
-        dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, SAMPLE_RATE, BUFFER_SIZE / 2, new PitchDetectionHandler() {
-
-            @Override
-            public void handlePitch(PitchDetectionResult pitchDetectionResult,
-                                    AudioEvent audioEvent) {
-                final float pitchInHz = pitchDetectionResult.getPitch();
-
-                try {
-
-                    /*FileWriter fw = new FileWriter(Environment.getExternalStorageDirectory() + "/test.txt", true);
-                    fw.write(String.valueOf(pitchInHz) + ";");
-                    fw.close();*/
-   /*                 Log.d("szerintem igy is muxik", String.valueOf(pitchInHz));
-
-                } catch (Exception e) {
-
-                }
-            }
-        }));
-
-        Thread analyseThread = new Thread(dispatcher, "Audio Dispatcher");
-        analyseThread.start();
-
-        ProgressBar pb  = (ProgressBar)findViewById(R.id.progressBar);
-
-        pb.setVisibility(View.VISIBLE);*/
-       /* while (analyseThread.getState() != Thread.State.TERMINATED) {
-
-        }*/
-        //   Toast.makeText(this, "Anayse finished", Toast.LENGTH_SHORT).show();
-
-
-        //  getAnalyseResult();
-
+        Log.d("AAA_AAA", "check");
 
     }
 
@@ -347,6 +283,20 @@ public class Tutor extends AppCompatActivity {
 
         cursor.close();
         db.close();
+
+    }
+
+    class Tick {
+
+        float tick; //tempo means beats per minute, calculate milliseconds between ticks
+        long milliSeconds; // Thread.sleep() 2 params: milliseconds long, nanoseconds int
+        int nanoSeconds; // milli = 10^-3, nano = 10^-9, difference is 10^6 = 1000000
+
+        public Tick(int bpm) {
+            tick = (60f / bpm) * 1000;
+            milliSeconds = (long) tick;
+            nanoSeconds = (int) ((tick - (int) tick) * 1000000);
+        }
 
     }
 }

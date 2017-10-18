@@ -4,8 +4,8 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Environment;
-import android.os.Handler;
 import android.util.Log;
+
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,9 +13,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-/**
- * Created by Marcus on 2017. 10. 16..
- */
 
 public class SoundRecorder {
 
@@ -35,7 +32,6 @@ public class SoundRecorder {
                 SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT, BUFFER_SIZE);
-
 
         Thread recordAudioThread = new Thread(new Runnable() {
 
