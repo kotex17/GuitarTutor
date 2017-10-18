@@ -1,9 +1,5 @@
 package guitartutorandanalyser.guitartutor;
 
-
-import android.database.Cursor;
-import android.util.ArrayMap;
-
 public class HomeWork {
 
     private int bpm;

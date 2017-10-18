@@ -7,7 +7,6 @@ import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
-import java.io.FileWriter;
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
@@ -16,17 +15,15 @@ import be.tarsos.dsp.pitch.PitchDetectionHandler;
 import be.tarsos.dsp.pitch.PitchDetectionResult;
 import be.tarsos.dsp.pitch.PitchProcessor;
 
-/**
- * Created by Marcus on 2017. 10. 16..
- */
 
-public class SoundAnalysator {
+public class SoundAnalyser {
 
     private final String MAP_FILE_NAME = "/guitarTutorMap.txt";
     File mapFile = new File(Environment.getExternalStorageDirectory() + MAP_FILE_NAME);
     private HomeWork currentHomeWork;
+    private String map ="";
 
-    public SoundAnalysator(HomeWork homework){
+    public SoundAnalyser(HomeWork homework){
         this.currentHomeWork = homework;
     }
 
@@ -45,6 +42,9 @@ public class SoundAnalysator {
         if (mapFile.exists())
             mapFile.delete();
 
+        // audiofactory(from pipe, wav header is ignored, pcm samples captured) ---> audiodispathcer(plays a file and sends float arrays to registered AudioProcessor )
+        // AudioProcessor = PitchProcessor, PitchdetectionHandler = Interface( handlePitch())
+
         dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, SAMPLE_RATE, BUFFER_SIZE / 2, new PitchDetectionHandler() {
 
             @Override
@@ -54,10 +54,12 @@ public class SoundAnalysator {
 
                 try {
 
-                    FileWriter fw = new FileWriter(Environment.getExternalStorageDirectory() + MAP_FILE_NAME, true);
+                   /* FileWriter fw = new FileWriter(Environment.getExternalStorageDirectory() + MAP_FILE_NAME, true);
                     fw.write(String.valueOf(pitchInHz) + ";");
-                    fw.close();
-                    Log.d("classban is muxik?", String.valueOf(pitchInHz));
+                    fw.close();*/
+
+                    map = getMap() + String.valueOf(pitchInHz)+';';
+                    Log.d("mapban is muxik?", map);
 
                 } catch (Exception e) {
 
@@ -67,6 +69,7 @@ public class SoundAnalysator {
 
         Thread analyseThread = new Thread(dispatcher, "Audio Dispatcher");
         analyseThread.start();
+
 
         /*while (analyseThread.getState() != Thread.State.TERMINATED) {
 
@@ -79,4 +82,7 @@ public class SoundAnalysator {
     }
 
 
+    public String getMap() {
+        return map;
+    }
 }

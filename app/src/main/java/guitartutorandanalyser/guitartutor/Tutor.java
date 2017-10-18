@@ -1,6 +1,5 @@
 package guitartutorandanalyser.guitartutor;
 
-import android.app.ProgressDialog;
 import android.database.Cursor;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -13,8 +12,6 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.view.menu.ExpandedMenuView;
-import android.util.ArrayMap;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -24,27 +21,14 @@ import android.widget.RadioButton;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
-
-import be.tarsos.dsp.AudioDispatcher;
-import be.tarsos.dsp.AudioEvent;
-import be.tarsos.dsp.io.android.AndroidFFMPEGLocator;
-import be.tarsos.dsp.io.android.AudioDispatcherFactory;
-import be.tarsos.dsp.pitch.PitchDetectionHandler;
-import be.tarsos.dsp.pitch.PitchDetectionResult;
-import be.tarsos.dsp.pitch.PitchProcessor;
 
 public class Tutor extends AppCompatActivity {
 
@@ -55,23 +39,17 @@ public class Tutor extends AppCompatActivity {
             AudioFormat.CHANNEL_IN_MONO,
             AudioFormat.ENCODING_PCM_16BIT) / 2;
 
-
-    int recSizeInByte;
-    boolean isSoundRecording;
     boolean isSoundPlaying;
 
+
     Button recButton;
-    AudioRecord recorder;
     MediaPlayer mediaPlayer;
-    Handler handler;
 
     RadioButton metronome;
-
-    int tempTempo = 90;
-
-    SoundAnalysator soundAnalysator;
-
     HomeWork homework;
+
+    SoundRecorder soundRecorder;
+    SoundAnalyser soundAnalyser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,12 +60,11 @@ public class Tutor extends AppCompatActivity {
         fetchCurrentHomework(Integer.parseInt(s));
 
         Log.d("HOMEWORK DATA ", homework.getName() + " " + homework.getType() + " " + homework.getBpm());
-        Log.d("chromatic scale soindid", String.valueOf(R.raw.chromatic_scale_a_90bpm));
 
         metronome = (RadioButton) findViewById(R.id.metronomeButton);
         recButton = (Button) findViewById(R.id.button_play_stop);
         ImageView imageView = (ImageView) findViewById(R.id.imageView_tab);
-        imageView.setImageResource(R.drawable.orarend);
+        imageView.setImageResource(homework.getTabId());
     }
 
     public void onButtonPlayClick(View v) {
@@ -132,40 +109,34 @@ public class Tutor extends AppCompatActivity {
 
     private void startRecording() { // creates new audio recorder instance, start it, new recording thread and new metronome
 
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT, BUFFER_SIZE);
 
-        recorder.startRecording();
-        isSoundRecording = true;
-
-        Thread recordAudioThread = new Thread(new Runnable() {
-
-            public void run() {
-                writeAudioDataToFile();
-            }
-        }, "AudioRecorder Thread");
-
+        soundRecorder = new SoundRecorder();
+        Thread recordAudioThread = soundRecorder.startRecording();
+        Thread startMetronome = initializeMetronome();
 
         playPreCount();
 
         recordAudioThread.start();
+        startMetronome.start();
+    }
 
-        startMetronome();
+    private void stopRecording() {
+        if (soundRecorder != null)
+            soundRecorder.stopRecording();
+
     }
 
     private void playPreCount() {
 
-        SoundPool soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0); // 4, AudioManager.STREAM_MUSIC, 0);
-        int soundId = soundPool.load(getApplicationContext(), R.raw.metronome_click, 1);
+        SoundPool soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 0); // 1?????????
+        int soundId = soundPool.load(this, R.raw.metronome_click,1);
 
-        float tick = (60f / tempTempo) * 1000;
+        float tick = (60f / homework.getBpm()) * 1000; // calculate milliseconds between beats
 
         for (int i = 0; i < 4; i++) {
 
             long time1 = SystemClock.elapsedRealtime();
-            soundPool.play(soundId, 0.5f, 0.5f, 1, 1, 1);
+            soundPool.play(soundId, 1, 1, 1, 1, 1);
 
             while (SystemClock.elapsedRealtime() - time1 <= tick) {
                 // waiting ...
@@ -173,21 +144,20 @@ public class Tutor extends AppCompatActivity {
         }
     }
 
-    private void startMetronome() {
+    private Thread initializeMetronome() {
 
-        final float tick2 = (60f / tempTempo) * 1000; //tempo means beats per minute, calculate milliseconds between ticks
+        float tick = (60f / homework.getBpm()) * 1000; //tempo means beats per minute, calculate milliseconds between ticks
+        final long tickMilliSeconds = (long) tick;  // Thread.sleep() 2 params: milliseconds  long, nanoseconds  int
+        final int tickNanoSeconds = (int) ((tick - (int) tick) * 1000000); // milli = 10^-3, nano = 10^-9, difference is 10^6 = 1000000
 
-        handler = new Handler(getApplicationContext().getMainLooper());
+        final Handler handler = new Handler(getApplicationContext().getMainLooper());
 
-        Thread startMetronome = new Thread(new Runnable() {
+        return new Thread(new Runnable() {
 
             public void run() {
 
-                long tickMilliSeconds = (long) tick2;  // Thread.sleep() 2 params: milliseconds  long, nanoseconds  int
-                float calculateNanoseconds = (tick2 - (int) tick2) * 1000000;  // milli = 10^-3, nano = 10^-9, difference is 10^6 = 1000000
-                int tickNanoSeconds = (int) calculateNanoseconds;
+                for(int i = 0; i < homework.getBeats() && soundRecorder.isSoundRecording(); i++)  {
 
-                while (isSoundRecording) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -199,144 +169,25 @@ public class Tutor extends AppCompatActivity {
                     } catch (InterruptedException e) {
                         Log.d("Metronome thread error", e.getMessage());
                     }
-                }
 
+                }
+                stopRecording();
             }
         }, "Metronome Thread");
-
-        startMetronome.start();
-    }
-
-    private void writeAudioDataToFile() {
-        // Read audio data into short buffer, Write the output audio in byte
-
-        short sData[] = new short[BUFFER_SIZE];
-
-        try {
-            // first create a file with dummy wav header
-
-            FileOutputStream outStream = new FileOutputStream(PATH_NAME);
-            outStream.write(createWavHeader());
-
-            while (isSoundRecording) {
-                // read audio from microphone, short format
-                recorder.read(sData, 0, BUFFER_SIZE);
-
-                // writes audio data into file from buffer
-                byte bData[] = short2byte(sData);
-                outStream.write(bData, 0, BUFFER_SIZE * 2);
-                recSizeInByte += bData.length;
-            }
-
-            outStream.close();
-        } catch (IOException e) {
-            Log.d("Audio record error", e.getMessage().toString());
-        }
-    }
-
-    private byte[] short2byte(short[] sData) {
-        // all android supports little endianness, Android ARM systems are bi endian, by deafault littleendian (manualy can be swithced to big endian)
-        //android audio format PCM16bit record in the default device native endian
-        byte[] bytes = new byte[sData.length * 2];
-
-        for (int i = 0; i < sData.length; i++) {
-            bytes[i * 2] = (byte) (sData[i] & 0x00FF); //hexadecimal 00 FF = 0000 0000 1111 1111 masking
-            bytes[(i * 2) + 1] = (byte) (sData[i] >> 8); // shift 8 right,
-        }
-
-        return bytes;
-    }
-
-    private byte[] createWavHeader() {
-        // The default byte ordering assumed for WAVE data files is little-endian. Files written using the big-endian byte ordering scheme have the identifier RIFX instead of RIFF.
-
-        short channels = 1; //mono
-        short bitsPerSample = 16; // pcm 16bit
-
-        //   int subchunk2Size = (int) recordedAudioLength; // int enough, recorded audio is max a few minutes
-        //   int chunkSize = (int) (recordedAudioLength + 36); //wave file header is 44 bytes, first 4 is ChunkId, second 4 bytes are ChunkSize: 44 - 8 = 36 bytes
-
-        byte[] headerBytes = ByteBuffer
-                .allocate(14)
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .putShort(channels)
-                .putInt(SAMPLE_RATE)
-                .putInt(SAMPLE_RATE * channels * (bitsPerSample / 8))
-                .putShort((short) (channels * (bitsPerSample / 8)))
-                .putShort(bitsPerSample)
-                .array();
-
-        byte[] header = new byte[]{
-                'R', 'I', 'F', 'F', // ChunkID
-                0, 0, 0, 0, // ChunkSize
-                'W', 'A', 'V', 'E', // Format
-                'f', 'm', 't', ' ', // Subchunk1ID
-                16, 0, 0, 0, // Subchunk1Size
-                1, 0, // audioformat: 1=PCM
-                headerBytes[0], headerBytes[1], // No. of channels 1= mono, 2 = stereo
-                headerBytes[2], headerBytes[3], headerBytes[4], headerBytes[5], // SampleRate
-                headerBytes[6], headerBytes[7], headerBytes[8], headerBytes[9], // ByteRate
-                headerBytes[10], headerBytes[11], // BlockAlign
-                headerBytes[12], headerBytes[13], // BitsPerSample
-                'd', 'a', 't', 'a', // Subchunk2ID
-                0, 0, 0, 0 // Subchunk2Size
-        };
-
-        recSizeInByte += header.length;
-
-        return header;
-    }
-
-
-    private void stopRecording() {
-
-        if (recorder != null) {
-
-            recorder.stop();
-            recorder.release();
-            recorder = null;
-            isSoundRecording = false;
-        }
-
-        updateWavHeader();
-    }
-
-    private void updateWavHeader() {
-
-        byte[] bytesToUpdate = ByteBuffer
-                .allocate(8)
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .putInt(recSizeInByte - 8) // ChunkSize
-                .putInt(recSizeInByte - 44) // Subchunk2Size
-                .array();
-
-        try {
-            RandomAccessFile randomAccesFile = new RandomAccessFile(PATH_NAME, "rw");
-
-            randomAccesFile.seek(4);
-            randomAccesFile.write(bytesToUpdate, 0, 4);
-
-            randomAccesFile.seek(40);
-            randomAccesFile.write(bytesToUpdate, 4, 4);
-
-            randomAccesFile.close();
-
-        } catch (IOException e) {
-
-        }
-
 
     }
 
     private void analyseRecord() {
 
-        soundAnalysator = new SoundAnalysator(homework);
-        soundAnalysator.analyseRecord(SAMPLE_RATE, BUFFER_SIZE, PATH_NAME);
+        soundAnalyser = new SoundAnalyser(homework);
+        soundAnalyser.analyseRecord(SAMPLE_RATE, BUFFER_SIZE, PATH_NAME);
 
         ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
         pb.setVisibility(View.VISIBLE);
 
-        soundAnalysator.compareResult(); // not implemented ye
+        Log.d("SOUND ANALYSER STRING",soundAnalyser.getMap());
+
+       // soundAnalyser.compareResult(); // not implemented ye
 
 //////////// created clas to do this work 2017.10.16.
       /*  Toast.makeText(this, "Analyse started", Toast.LENGTH_SHORT).show();
