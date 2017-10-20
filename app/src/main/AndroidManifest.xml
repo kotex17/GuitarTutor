@@ -49,6 +49,23 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".UserGuide"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="guitartutorandanalyser.guitartutor.UserGuide" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".BestScores"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="guitartutorandanalyser.guitartutor.BestScores" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

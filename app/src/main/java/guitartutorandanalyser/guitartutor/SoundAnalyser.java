@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 
 import be.tarsos.dsp.AudioDispatcher;
@@ -20,42 +21,46 @@ import be.tarsos.dsp.pitch.PitchProcessor;
 
 public class SoundAnalyser {
 
-    private final String MAP_FILE_NAME = "/guitarTutorMap.txt";
-    File mapFile = new File(Environment.getExternalStorageDirectory() + MAP_FILE_NAME);
+
     private HomeWork currentHomeWork;
-    private String map = "";
+    private String map;
 
     public SoundAnalyser(HomeWork homework) {
         this.currentHomeWork = homework;
     }
 
-    public void analyseRecord(int SAMPLE_RATE, int BUFFER_SIZE, String PATH_NAME, Context ctx) {
+    int a = 0;
 
+    public void analyseRecord(int SAMPLE_RATE, int BUFFER_SIZE, String PATH_NAME, Context ctx) {
+        map = "";
         new AndroidFFMPEGLocator(ctx);
 
-        final AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(PATH_NAME, SAMPLE_RATE, BUFFER_SIZE / 2, 0);  //   BUFFER_SIZE / 2 is ineccessary?? need some test!!!
+        final AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(PATH_NAME, SAMPLE_RATE, 2048, 0);  //   BUFFER_SIZE / 2 is ineccessary?? need some test!!!
 
-      /*  if (mapFile.exists())
-            mapFile.delete();*/
 
+  /*      File mapFile = new File(Environment.getExternalStorageDirectory() + "/chromatic_scale_a_90bpmMAP3.txt");
+        if (mapFile.exists())
+           mapFile.delete();
+*/
         // audiofactory(from pipe, wav header is ignored, pcm samples captured) ---> audiodispathcer(plays a file and sends float arrays to registered AudioProcessor )
         // AudioProcessor = PitchProcessor, PitchdetectionHandler = Interface( handlePitch())
 
-        dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, SAMPLE_RATE, BUFFER_SIZE / 2, new PitchDetectionHandler() {
+
+        dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, SAMPLE_RATE, 2048, new PitchDetectionHandler() {
 
             @Override
             public void handlePitch(PitchDetectionResult pitchDetectionResult,
                                     AudioEvent audioEvent) {
-                final float pitchInHz = pitchDetectionResult.getPitch();
-
+                final int pitchInHz = (int) pitchDetectionResult.getPitch();
+                // int is enough, because guitar has freats, so you cant go wrong(its not a violing or an instrument without freats)
                 try {
 
-                   /* FileWriter fw = new FileWriter(Environment.getExternalStorageDirectory() + MAP_FILE_NAME, true);
+    /*                FileWriter fw = new FileWriter(Environment.getExternalStorageDirectory() + "/chromatic_scale_a_90bpmMAP3.txt", true);
                     fw.write(String.valueOf(pitchInHz) + ";");
-                    fw.close();*/
-
-                    map = getMap() + String.valueOf(pitchInHz) + ';';
-
+                    fw.close();
+*/
+                    map = map + String.valueOf(pitchInHz) + ';';
+                    a++;
 
                 } catch (Exception e) {
 
@@ -75,18 +80,21 @@ public class SoundAnalyser {
 
         final Thread threadToWaitFor = audioDispathcerThread;
 
+        Log.d("map length?", String.valueOf(a) + "  -   " + String.valueOf(currentHomeWork.getMap().length()) + "  -  " + String.valueOf(map.length()));
+
         Thread compareThread = new Thread(new Runnable() {
 
             public void run() {
 
                 try {
                     threadToWaitFor.join();
+
                     int[] intPitchMapHomeWork = getIntPitchMap(currentHomeWork.getMap());
                     int[] intPitchMapRecord = getIntPitchMap(map);
 
                     Log.d("hosszak: ", intPitchMapHomeWork.length + "  -  " + intPitchMapRecord.length);
-                    int result = compareIntPitchMaps(intPitchMapHomeWork,intPitchMapRecord);
-                    Log.d("eredmeny: ",String.valueOf(result)+"%");
+                    int result = compareIntPitchMaps(intPitchMapHomeWork, intPitchMapRecord);
+                    Log.d("eredmeny: ", String.valueOf(result) + "%");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } catch (Exception e) {
@@ -103,6 +111,8 @@ public class SoundAnalyser {
 
         int countDetectedPitches = map.length() - map.replace(";", "").length();
 
+        Log.d("DETECTED pitches: ", String.valueOf(countDetectedPitches));
+
         int[] intPitchMap = new int[countDetectedPitches];
 
         int pitchMapIndex = 0;
@@ -116,7 +126,7 @@ public class SoundAnalyser {
                 onePitch += c;
             } else {
 
-                Log.d(" mennyi intben? ", onePitch);
+                //   Log.d(" mennyi intben? ", onePitch);
                 intPitchMap[pitchMapIndex] = (int) Double.parseDouble(onePitch);
                 pitchMapIndex++;
                 onePitch = "";
@@ -127,7 +137,7 @@ public class SoundAnalyser {
     }
 
     private int compareIntPitchMaps(int[] homework, int[] recorded) {
-        int result ;
+        int result;
 
         int correct = 0;
         int missed = 0;
@@ -136,19 +146,18 @@ public class SoundAnalyser {
         while (homework.length > i && recorded.length > i) {
             int difference = homework[i] - recorded[i];
 
-            Log.d("na mit jelenz?", String.valueOf(homework[i])+"  "+String.valueOf(recorded[i])+"   "+String.valueOf(difference));
+            Log.d("na mit jelenz?", String.valueOf(homework[i]) + "  " + String.valueOf(recorded[i]) + "   " + String.valueOf(difference));
             if (5 > difference && difference > -5) {
                 correct++;
-            }
-            else {
+            } else {
                 missed++;
             }
             i++;
         }
 
-        result = (correct / (correct + missed))*100;
+        double dResult = (double) ((correct * 100) / (correct + missed));
 
-        return result;
+        return (int) dResult;
     }
 
 

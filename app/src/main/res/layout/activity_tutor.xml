@@ -48,9 +48,8 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="8dp"
         android:onClick="onButtonStopClick"
-        android:text="Button"
+        android:text="Stop Rec"
         app:layout_constraintRight_toRightOf="parent"
-        tools:text="stop rec"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/button_rec" />

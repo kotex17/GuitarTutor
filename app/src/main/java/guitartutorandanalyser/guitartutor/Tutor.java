@@ -27,7 +27,7 @@ public class Tutor extends AppCompatActivity {
 
 
     final int SAMPLE_RATE = 44100;
-    final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";
+    final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";//  "/chromatic_scale_a_90bpm.wav";
     final int BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE,
             AudioFormat.CHANNEL_IN_MONO,
             AudioFormat.ENCODING_PCM_16BIT) / 2;
@@ -178,8 +178,6 @@ public class Tutor extends AppCompatActivity {
 
         ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
         pb.setVisibility(View.VISIBLE);
-
-        Log.d("AAA_AAA", "check");
 
     }
 

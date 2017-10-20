@@ -37,9 +37,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-
-
-
     public DatabaseHelper(Context context) {
 
         super(context, DB_NAME, null, 1);
@@ -121,7 +118,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         super.close();
     }
 
-    public boolean updateDatabase(int id, String date, String time, float real) {
+    public boolean updateDatabase(int id, String date, String time, float real) { // write this again!!!!!!!!
 
         ContentValues contentValues = new ContentValues();
         contentValues.put("_id", id);
