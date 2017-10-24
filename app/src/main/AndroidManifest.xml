@@ -58,10 +58,20 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".BestScores"
+        <activity
+            android:name=".BestScores"
             android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="guitartutorandanalyser.guitartutor.BestScores" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".AnalyseResult"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="guitartutorandanalyser.guitartutor.AnalyseResult" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

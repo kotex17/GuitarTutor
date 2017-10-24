@@ -1,9 +1,7 @@
 package guitartutorandanalyser.guitartutor;
 
 import android.database.Cursor;
-import android.media.AudioFormat;
 import android.media.AudioManager;
-import android.media.AudioRecord;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.os.Environment;
@@ -16,21 +14,13 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
-import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Tutor extends AppCompatActivity {
 
 
     final int SAMPLE_RATE = 44100;
-    final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";//  "/chromatic_scale_a_90bpm.wav";
-    final int BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE,
-            AudioFormat.CHANNEL_IN_MONO,
-            AudioFormat.ENCODING_PCM_16BIT) / 2;
+    final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";//
 
     boolean isSoundPlaying;
 
@@ -49,8 +39,9 @@ public class Tutor extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tutor);
 
-        String s = getIntent().getStringExtra("homeWorkId");
-        fetchCurrentHomework(Integer.parseInt(s));
+        String parameter = getIntent().getStringExtra("homeWorkId");
+
+        this.homework = (new DatabaseHelper(this)).fetchHomeworkById(Integer.parseInt(parameter)); //fetchCurrentHomework(Integer.parseInt(s));
 
         tick = new Tick(homework.getBpm());
 
@@ -83,11 +74,12 @@ public class Tutor extends AppCompatActivity {
 
     private void stopPlay() {
 
-        mediaPlayer.stop();
-        mediaPlayer.release();
-        isSoundPlaying = false;
-        playStopButton.setText("Play");
-
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            isSoundPlaying = false;
+            playStopButton.setText("Play");
+        }
     }
 
     private void startPlay() {
@@ -100,7 +92,6 @@ public class Tutor extends AppCompatActivity {
     }
 
     private void startRecording() { // creates new audio recorder instance, start it, new recording thread and new metronome
-
 
         soundRecorder = new SoundRecorder();
 
@@ -172,116 +163,20 @@ public class Tutor extends AppCompatActivity {
     }
 
     private void analyseRecord() {
-        Log.d("AAA_AAA", "check0");
-        soundAnalyser = new SoundAnalyser(homework);
-        soundAnalyser.analyseRecord(SAMPLE_RATE, BUFFER_SIZE, PATH_NAME, this);
+
+        soundAnalyser = new SoundAnalyser(homework, this);
+        soundAnalyser.analyseRecord(SAMPLE_RATE, PATH_NAME, this);
 
         ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
         pb.setVisibility(View.VISIBLE);
-
     }
 
-    private void getAnalyseResult() {
-        Log.d("COMPAREAA ", " ß ");
-        try {
-            BufferedReader br1 = new BufferedReader(new FileReader(Environment.getExternalStorageDirectory() + "/map1.txt"));
+    @Override
+    protected void onPause() {
 
-
-            List<String> lines1 = new ArrayList<String>();
-
-
-            String line1 = "";
-
-            while (((line1 = br1.readLine()) != null)) {
-                lines1.add(line1);
-                //  lines2.add(line2);
-            }
-
-
-            //  && ((line2 = br2.readLine()) != null))
-            br1.close();
-            Log.d("COMPAREAA ", " ¤ß$ ");
-            BufferedReader br2 = new BufferedReader(new FileReader(Environment.getExternalStorageDirectory() + "/map2.txt"));
-
-            List<String> lines2 = new ArrayList<String>();
-            String line2 = "";
-
-            while (((line2 = br2.readLine()) != null)) {
-                //lines1.add(line1);
-                lines2.add(line2);
-            }
-
-            br2.close();
-
-            char[] line1Array = line1.toCharArray();
-            char[] line2Array = line2.toCharArray();
-
-            int equal = 0;
-            int error = 0;
-
-            // lenght of the two arrays are the same at this point
-            for (int i = 0; i < line1Array.length; i++) {
-
-                if (line1Array[i] == line2Array[i]) {
-                    equal++;
-                } else {
-                    error++;
-                }
-                Log.d("COMPAREAA ", line1Array[i] + " ß " + line2Array[i]);
-            }
-
-            Toast.makeText(this, "equal: " + String.valueOf(equal) + " ß " + "error: " + String.valueOf(error), Toast.LENGTH_LONG);
-        } catch (Exception e) {
-            Log.d("COMPAREAA ", "ERROR");
-            Log.d("COMPAREAA", e.getMessage());
-        }
-
-    }
-
-    private void fetchCurrentHomework(int id) {
-
-        DatabaseHelper db = new DatabaseHelper(this);
-        try {
-            db.openDataBase();
-        } catch (Exception e) {
-
-        }
-
-        Cursor cursor = db.myDataBase.query(
-                DatabaseHelper.TABLE_HOMEWORKS,
-                new String[]{DatabaseHelper.Column.ID,
-                        DatabaseHelper.Column.TYPE,
-                        DatabaseHelper.Column.NAME,
-                        DatabaseHelper.Column.BPM,
-                        DatabaseHelper.Column.BEATS,
-                        DatabaseHelper.Column.RECORDPOINT,
-                        DatabaseHelper.Column.RECORDDATE,
-                        DatabaseHelper.Column.COMPLETED,
-                        DatabaseHelper.Column.MAP,
-                        DatabaseHelper.Column.TABID,
-                        DatabaseHelper.Column.SONGID},
-                DatabaseHelper.Column.ID + " = ?",
-                new String[]{String.valueOf(id)},
-                null, null, null, "1"); // LIMIT 1
-
-        if (cursor.moveToFirst()) {
-            this.homework = HomeWork.homeWorkCreator(
-                    cursor.getInt(0),
-                    cursor.getString(1),
-                    cursor.getString(2),
-                    cursor.getInt(3),
-                    cursor.getInt(4),
-                    cursor.getInt(5),
-                    cursor.getString(6),
-                    cursor.getInt(7),
-                    cursor.getString(8),
-                    cursor.getInt(9),
-                    cursor.getInt(10));
-        }
-
-        cursor.close();
-        db.close();
-
+        super.onPause();
+        stopRecording();
+        stopPlay();
     }
 
     class Tick {

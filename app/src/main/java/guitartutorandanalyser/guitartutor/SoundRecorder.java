@@ -17,7 +17,7 @@ import java.nio.ByteOrder;
 public class SoundRecorder {
 
     final int SAMPLE_RATE = 44100;
-    final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";   // "/chromatic_scale_a_90bpm.wav";
+    final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";
     final int BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE,
             AudioFormat.CHANNEL_IN_MONO,
             AudioFormat.ENCODING_PCM_16BIT) / 2;

@@ -2,13 +2,8 @@ package guitartutorandanalyser.guitartutor;
 
 
 import android.content.Context;
-import android.content.ContextWrapper;
-import android.os.Environment;
+import android.content.Intent;
 import android.util.Log;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.util.ArrayList;
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
@@ -23,16 +18,20 @@ public class SoundAnalyser {
 
 
     private HomeWork currentHomeWork;
-    private String map;
+    private String recordedAudioMap;
+    Context context;
 
-    public SoundAnalyser(HomeWork homework) {
+
+
+    public SoundAnalyser(HomeWork homework, Context context) {
         this.currentHomeWork = homework;
+        this.context = context;
     }
 
     int a = 0;
 
-    public void analyseRecord(int SAMPLE_RATE, int BUFFER_SIZE, String PATH_NAME, Context ctx) {
-        map = "";
+    public void analyseRecord(int SAMPLE_RATE, String PATH_NAME, Context ctx) {
+        recordedAudioMap = "";
         new AndroidFFMPEGLocator(ctx);
 
         final AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(PATH_NAME, SAMPLE_RATE, 2048, 0);  //   BUFFER_SIZE / 2 is ineccessary?? need some test!!!
@@ -52,14 +51,14 @@ public class SoundAnalyser {
             public void handlePitch(PitchDetectionResult pitchDetectionResult,
                                     AudioEvent audioEvent) {
                 final int pitchInHz = (int) pitchDetectionResult.getPitch();
-                // int is enough, because guitar has freats, so you cant go wrong(its not a violing or an instrument without freats)
+                // int is enough, because guitar has freats, so you cant go wrong(its not a violin or an instrument without freats)
                 try {
 
     /*                FileWriter fw = new FileWriter(Environment.getExternalStorageDirectory() + "/chromatic_scale_a_90bpmMAP3.txt", true);
                     fw.write(String.valueOf(pitchInHz) + ";");
                     fw.close();
 */
-                    map = map + String.valueOf(pitchInHz) + ';';
+                    recordedAudioMap += String.valueOf(pitchInHz) + ';';
                     a++;
 
                 } catch (Exception e) {
@@ -80,8 +79,6 @@ public class SoundAnalyser {
 
         final Thread threadToWaitFor = audioDispathcerThread;
 
-        Log.d("map length?", String.valueOf(a) + "  -   " + String.valueOf(currentHomeWork.getMap().length()) + "  -  " + String.valueOf(map.length()));
-
         Thread compareThread = new Thread(new Runnable() {
 
             public void run() {
@@ -90,11 +87,16 @@ public class SoundAnalyser {
                     threadToWaitFor.join();
 
                     int[] intPitchMapHomeWork = getIntPitchMap(currentHomeWork.getMap());
-                    int[] intPitchMapRecord = getIntPitchMap(map);
+                    int[] intPitchMapRecord = getIntPitchMap(recordedAudioMap);
 
                     Log.d("hosszak: ", intPitchMapHomeWork.length + "  -  " + intPitchMapRecord.length);
+
                     int result = compareIntPitchMaps(intPitchMapHomeWork, intPitchMapRecord);
+
                     Log.d("eredmeny: ", String.valueOf(result) + "%");
+
+                    startAnalyseResultActivity(result);
+
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } catch (Exception e) {
@@ -111,8 +113,6 @@ public class SoundAnalyser {
 
         int countDetectedPitches = map.length() - map.replace(";", "").length();
 
-        Log.d("DETECTED pitches: ", String.valueOf(countDetectedPitches));
-
         int[] intPitchMap = new int[countDetectedPitches];
 
         int pitchMapIndex = 0;
@@ -126,7 +126,6 @@ public class SoundAnalyser {
                 onePitch += c;
             } else {
 
-                //   Log.d(" mennyi intben? ", onePitch);
                 intPitchMap[pitchMapIndex] = (int) Double.parseDouble(onePitch);
                 pitchMapIndex++;
                 onePitch = "";
@@ -160,8 +159,13 @@ public class SoundAnalyser {
         return (int) dResult;
     }
 
+    private void startAnalyseResultActivity(int result) {
 
-    public String getMap() {
-        return map;
+        Intent analyseResultIntent = new Intent("guitartutorandanalyser.guitartutor.AnalyseResult");
+        analyseResultIntent.putExtra("result", String.valueOf(result));
+        analyseResultIntent.putExtra("homeworkId", String.valueOf(currentHomeWork.get_id()));
+        context.startActivity(analyseResultIntent);
+
     }
+
 }

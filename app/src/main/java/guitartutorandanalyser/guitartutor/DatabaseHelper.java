@@ -2,6 +2,7 @@ package guitartutorandanalyser.guitartutor;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -134,6 +135,56 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         return true;
     }
+
+
+    public HomeWork fetchHomeworkById(int id) {
+
+        HomeWork homework = new HomeWork();
+
+        try {
+            this.openDataBase();
+        } catch (Exception e) {
+
+        }
+
+        Cursor cursor = this.myDataBase.query(
+                DatabaseHelper.TABLE_HOMEWORKS,
+                new String[]{DatabaseHelper.Column.ID,
+                        DatabaseHelper.Column.TYPE,
+                        DatabaseHelper.Column.NAME,
+                        DatabaseHelper.Column.BPM,
+                        DatabaseHelper.Column.BEATS,
+                        DatabaseHelper.Column.RECORDPOINT,
+                        DatabaseHelper.Column.RECORDDATE,
+                        DatabaseHelper.Column.COMPLETED,
+                        DatabaseHelper.Column.MAP,
+                        DatabaseHelper.Column.TABID,
+                        DatabaseHelper.Column.SONGID},
+                DatabaseHelper.Column.ID + " = ?",
+                new String[]{String.valueOf(id)},
+                null, null, null, "1"); // LIMIT 1
+
+        if (cursor.moveToFirst()) {
+            homework = HomeWork.homeWorkCreator(
+                    cursor.getInt(0),
+                    cursor.getString(1),
+                    cursor.getString(2),
+                    cursor.getInt(3),
+                    cursor.getInt(4),
+                    cursor.getInt(5),
+                    cursor.getString(6),
+                    cursor.getInt(7),
+                    cursor.getString(8),
+                    cursor.getInt(9),
+                    cursor.getInt(10));
+        }
+
+        cursor.close();
+        this.close();
+
+        return  homework;
+    }
+
 
     @Override
     public void onCreate(SQLiteDatabase db) {

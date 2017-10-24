@@ -35,6 +35,7 @@ public class GuitarTutorMain extends AppCompatActivity {
             DatabaseHelper dbh = new DatabaseHelper(this);
             dbh.createDataBase();
 
+          //  Log.d("cromatic sound id", String.valueOf( this.getResources().getIdentifier("song_chromatic_scale_a_90", "raw", this.getPackageName())));
            // dbh.UPDATE_DB_toDelete(); // delete this line
 
         } catch (Exception e) {
