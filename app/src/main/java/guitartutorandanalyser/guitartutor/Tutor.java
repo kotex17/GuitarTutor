@@ -1,6 +1,5 @@
 package guitartutorandanalyser.guitartutor;
 
-import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
@@ -31,6 +30,7 @@ public class Tutor extends AppCompatActivity {
     SoundRecorder soundRecorder;
     SoundAnalyser soundAnalyser;
     HomeWork homework;
+    ProgressBar progressBar;
 
     Tick tick;
 
@@ -48,6 +48,7 @@ public class Tutor extends AppCompatActivity {
         metronome = (RadioButton) findViewById(R.id.metronomeButton);
         playStopButton = (Button) findViewById(R.id.button_play_stop);
         ((ImageView) findViewById(R.id.imageView_tab)).setImageResource(homework.getTabId());
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
     }
 
     public void onButtonPlayClick(View v) {
@@ -167,8 +168,7 @@ public class Tutor extends AppCompatActivity {
         soundAnalyser = new SoundAnalyser(homework, this);
         soundAnalyser.analyseRecord(SAMPLE_RATE, PATH_NAME, this);
 
-        ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
-        pb.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -177,6 +177,7 @@ public class Tutor extends AppCompatActivity {
         super.onPause();
         stopRecording();
         stopPlay();
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
     class Tick {
