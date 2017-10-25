@@ -17,35 +17,35 @@ import be.tarsos.dsp.pitch.PitchProcessor;
 public class SoundAnalyser {
 
 
-    private HomeWork currentHomeWork;
-    private String recordedAudioMap;
+    HomeWork currentHomeWork;
+    String recordedAudioMap;
     Context context;
+    int processBufferSize = 2048;
+    int SAMPLE_RATE;
+    String PATH_NAME;
 
 
-
-    public SoundAnalyser(HomeWork homework, Context context) {
+    public SoundAnalyser(HomeWork homework, Context context, int SAMPLE_RATE, String PATH_NAME) {
         this.currentHomeWork = homework;
         this.context = context;
+        this.SAMPLE_RATE = SAMPLE_RATE;
+        this.PATH_NAME = PATH_NAME;
     }
 
-    int a = 0;
 
-    public void analyseRecord(int SAMPLE_RATE, String PATH_NAME, Context ctx) {
+    public void analyseRecord() {
+
         recordedAudioMap = "";
-        new AndroidFFMPEGLocator(ctx);
 
-        final AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(PATH_NAME, SAMPLE_RATE, 2048, 0);  //   BUFFER_SIZE / 2 is ineccessary?? need some test!!!
+        new AndroidFFMPEGLocator(context);
 
+        final AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(PATH_NAME, SAMPLE_RATE, processBufferSize, 0);
 
-  /*      File mapFile = new File(Environment.getExternalStorageDirectory() + "/chromatic_scale_a_90bpmMAP3.txt");
-        if (mapFile.exists())
-           mapFile.delete();
-*/
         // audiofactory(from pipe, wav header is ignored, pcm samples captured) ---> audiodispathcer(plays a file and sends float arrays to registered AudioProcessor )
         // AudioProcessor = PitchProcessor, PitchdetectionHandler = Interface( handlePitch())
 
 
-        dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, SAMPLE_RATE, 2048, new PitchDetectionHandler() {
+        dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, SAMPLE_RATE, processBufferSize, new PitchDetectionHandler() {
 
             @Override
             public void handlePitch(PitchDetectionResult pitchDetectionResult,
@@ -53,29 +53,23 @@ public class SoundAnalyser {
                 final int pitchInHz = (int) pitchDetectionResult.getPitch();
                 // int is enough, because guitar has freats, so you cant go wrong(its not a violin or an instrument without freats)
                 try {
-
-    /*                FileWriter fw = new FileWriter(Environment.getExternalStorageDirectory() + "/chromatic_scale_a_90bpmMAP3.txt", true);
-                    fw.write(String.valueOf(pitchInHz) + ";");
-                    fw.close();
-*/
                     recordedAudioMap += String.valueOf(pitchInHz) + ';';
-                    a++;
 
                 } catch (Exception e) {
-
                 }
             }
         }));
 
 
         Thread audioDispathcerThread = new Thread(dispatcher, "Audio Dispatcher");
+        audioDispathcerThread.setPriority(Thread.MAX_PRIORITY);
         audioDispathcerThread.start();
 
         compareResult(audioDispathcerThread);
 
     }
 
-    public void compareResult(Thread audioDispathcerThread) {
+    private void compareResult(Thread audioDispathcerThread) {
 
         final Thread threadToWaitFor = audioDispathcerThread;
 
@@ -136,27 +130,66 @@ public class SoundAnalyser {
     }
 
     private int compareIntPitchMaps(int[] homework, int[] recorded) {
-        int result;
 
-        int correct = 0;
-        int missed = 0;
+        int correct;
+        int missed;
 
-        int i = 0;
-        while (homework.length > i && recorded.length > i) {
-            int difference = homework[i] - recorded[i];
+        float bestResult = 0;
 
-            Log.d("na mit jelenz?", String.valueOf(homework[i]) + "  " + String.valueOf(recorded[i]) + "   " + String.valueOf(difference));
-            if (5 > difference && difference > -5) {
-                correct++;
-            } else {
-                missed++;
+        // shift the recorded map to left and right compared to the homework's map to find the best match
+        for (int runTwice = 0; runTwice < 2; runTwice++) {
+
+            int recordedIndex;
+            int homeworkIndex;
+
+
+            for (int j = 0; j < 22; j++) { //44100 / 2048 = 21,5, so up to 1 sec the app corrigate the recorded map ( 22 samples)
+
+                correct = 0;
+                missed = 0;
+
+                if (runTwice == 0) { // first run shift one way
+                    recordedIndex = 0;
+                    homeworkIndex = j;
+                } else { // second time shift other way
+                    recordedIndex = j;
+                    homeworkIndex = 0;
+                }
+
+                while (homework.length > homeworkIndex && recorded.length > recordedIndex) {
+                    // because of overtone we have to check multiple values, moreover guitar is an imperfect instrument we give 5 Hz threshold to each note
+
+                    float bigger;
+                    int smaller;
+                    if (homework[homeworkIndex] > recorded[recordedIndex]) {
+                        bigger = homework[homeworkIndex];
+                        smaller = recorded[recordedIndex];
+                    } else {
+                        smaller = homework[homeworkIndex];
+                        bigger = recorded[recordedIndex];
+                    }
+
+                    float ratio = bigger / smaller;
+                    //Log.d("na mit jelez: " + String.valueOf(j)," hi "+ String.valueOf(homework[homeworkIndex]) + "  ri " + String.valueOf(recorded[recordedIndex]) + "   b " + String.valueOf(bigger)+"   s "+String.valueOf(smaller) + "  rat "+String.valueOf(ratio));
+
+                    if (0.95f <= ratio && ratio > 0.05f) {
+                        correct++;
+                    } else {
+                        missed++;
+                    }
+                    homeworkIndex++;
+                    recordedIndex++;
+                }
+
+                float tempResult = ((float) correct * 100) / (correct + missed);
+
+                if (tempResult > bestResult)
+                    bestResult = tempResult;
+
             }
-            i++;
         }
 
-        double dResult = (double) ((correct * 100) / (correct + missed));
-
-        return (int) dResult;
+        return Math.round(bestResult);
     }
 
     private void startAnalyseResultActivity(int result) {

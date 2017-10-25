@@ -52,7 +52,7 @@ public class SoundRecorder {
         short sData[] = new short[BUFFER_SIZE];
 
         try {
-            // first create a file with dummy wav header
+            // first create valami file with dummy wav header
 
             FileOutputStream outStream = new FileOutputStream(PATH_NAME);
             outStream.write(createWavHeader());
@@ -92,7 +92,7 @@ public class SoundRecorder {
         short channels = 1; //mono
         short bitsPerSample = 16; // pcm 16bit
 
-        //   int subchunk2Size = (int) recordedAudioLength; // int enough, recorded audio is max a few minutes
+        //   int subchunk2Size = (int) recordedAudioLength; // int enough, recorded audio is max valami few minutes
         //   int chunkSize = (int) (recordedAudioLength + 36); //wave file header is 44 bytes, first 4 is ChunkId, second 4 bytes are ChunkSize: 44 - 8 = 36 bytes
 
         byte[] headerBytes = ByteBuffer

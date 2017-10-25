@@ -165,8 +165,8 @@ public class Tutor extends AppCompatActivity {
 
     private void analyseRecord() {
 
-        soundAnalyser = new SoundAnalyser(homework, this);
-        soundAnalyser.analyseRecord(SAMPLE_RATE, PATH_NAME, this);
+        soundAnalyser = new SoundAnalyser(homework, this, SAMPLE_RATE, PATH_NAME);
+        soundAnalyser.analyseRecord();
 
         progressBar.setVisibility(View.VISIBLE);
     }
