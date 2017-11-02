@@ -6,15 +6,12 @@
     android:layout_height="match_parent"
     tools:context="guitartutorandanalyser.guitartutor.BestScores">
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="8dp"
-        android:text="TextView"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <ListView
+        android:id="@+id/bestScoresListView"
+        android:layout_width="576dp"
+        android:layout_height="328dp"
+        tools:layout_editor_absoluteX="8dp"
         app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="92dp"
-        tools:text="test text" />
+        android:layout_marginTop="15dp" />
+
 </android.support.constraint.ConstraintLayout>

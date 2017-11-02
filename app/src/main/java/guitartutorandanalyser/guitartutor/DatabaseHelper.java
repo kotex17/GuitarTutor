@@ -119,16 +119,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         super.close();
     }
 
-    public boolean updateDatabase(int id, String date, String time, float real) { // write this again!!!!!!!!
+    public boolean updateDatabase(HomeWork homework) { // write this again!!!!!!!!
 
         ContentValues contentValues = new ContentValues();
-        contentValues.put("_id", id);
-        contentValues.put("DATE", date);
-        contentValues.put("TIME", time);
-        contentValues.put("HEIGHT", real);
+   //     contentValues.put(Column.ID, homework.get_id());
+   //     contentValues.put(Column.TYPE, homework.getType());
+  //      contentValues.put(Column.NAME,  homework.getName());
+  //      contentValues.put(Column.BPM,  homework.getBpm());
+  //      contentValues.put(Column.BEATS,  homework.getBeats());
+        contentValues.put(Column.RECORDPOINT,  homework.getRecordpoint());
+        contentValues.put(Column.RECORDDATE,  homework.getRecordDate());
+        contentValues.put(Column.COMPLETED,  homework.getCompleted());
+  //      contentValues.put(Column.MAP,  homework.getMap());
+  //      contentValues.put(Column.TABID,  homework.getTabId());
+  //      contentValues.put(Column.SONGID,  homework.getSoundId());
 
         try {
-            myDataBase.update("mytable", contentValues, "_id = ?", new String[]{String.valueOf(id)});
+            myDataBase.update("mytable", contentValues, "_id = ?", new String[]{String.valueOf(homework.get_id())});
 
         } catch (Exception e) {
             return false;

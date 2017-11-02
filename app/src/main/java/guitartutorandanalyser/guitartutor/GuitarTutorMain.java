@@ -1,7 +1,9 @@
 package guitartutorandanalyser.guitartutor;
 
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,9 +23,13 @@ public class GuitarTutorMain extends AppCompatActivity {
             DatabaseHelper dbh = new DatabaseHelper(this);
             dbh.createDataBase();
 
-          //  Log.d("cromatic sound id", String.valueOf( this.getResources().getIdentifier("song_chromatic_scale_a_90", "raw", this.getPackageName())));
+           Log.d("c sound id", String.valueOf( this.getResources().getIdentifier("song_chromatic_scale_a_90", "raw", this.getPackageName())));
+            Log.d("c tab id", String.valueOf( this.getResources().getIdentifier("tab_chromatic_scale_a_90bpm", "raw", this.getPackageName())));
+            Log.d("s sound id", String.valueOf( this.getResources().getIdentifier("song_starwars_theme_102", "raw", this.getPackageName())));
+            Log.d("s tab id", String.valueOf( this.getResources().getIdentifier("tab_star_wars", "raw", this.getPackageName())));
 
-            dbh.UPDATE_DB_toDelete(); // delete this line
+
+             //  dbh.UPDATE_DB_toDelete(); // delete this line
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -39,11 +45,25 @@ public class GuitarTutorMain extends AppCompatActivity {
     }
 
     public void onButtonRecordsClick(View v) {
-        // ide egy lista kéne az elérhető songokról és lessonokról, aztán betölteni egy uj nézete, ahol már valami legjobb pont dátum?
+        startActivity(new Intent("guitartutorandanalyser.guitartutor.BestScores"));
     }
 
     public void onButtonHelpClick(View v) {
         startActivity(new Intent("guitartutorandanalyser.guitartutor.UserGuide"));
+    }
+
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setMessage("Kilép az alkalmazásból?")
+                .setCancelable(false)
+                .setPositiveButton("Igen", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        GuitarTutorMain.this.finish();
+                    }
+                })
+                .setNegativeButton("Mégse", null)
+                .show();
     }
 
 }

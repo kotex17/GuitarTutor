@@ -83,6 +83,8 @@ public class SoundAnalyser {
                     int[] intPitchMapHomeWork = getIntPitchMap(currentHomeWork.getMap());
                     int[] intPitchMapRecord = getIntPitchMap(recordedAudioMap);
 
+                    Log.d("maps hw: ", currentHomeWork.getMap());
+                    Log.d("maps re: ", recordedAudioMap);
                     Log.d("hosszak: ", intPitchMapHomeWork.length + "  -  " + intPitchMapRecord.length);
 
                     int result = compareIntPitchMaps(intPitchMapHomeWork, intPitchMapRecord);
@@ -148,6 +150,7 @@ public class SoundAnalyser {
                 correct = 0;
                 missed = 0;
 
+
                 if (runTwice == 0) { // first run shift one way
                     recordedIndex = 0;
                     homeworkIndex = j;
@@ -156,35 +159,69 @@ public class SoundAnalyser {
                     homeworkIndex = 0;
                 }
 
+                boolean firstMinusOneError = true;
+
                 while (homework.length > homeworkIndex && recorded.length > recordedIndex) {
                     // because of overtone we have to check multiple values, moreover guitar is an imperfect instrument we give 5 Hz threshold to each note
 
-                    float bigger;
-                    int smaller;
-                    if (homework[homeworkIndex] > recorded[recordedIndex]) {
+                    int bigger = recorded[recordedIndex];
+                    int smaller = homework[homeworkIndex];
+
+                    if (smaller > bigger) {
                         bigger = homework[homeworkIndex];
                         smaller = recorded[recordedIndex];
-                    } else {
-                        smaller = homework[homeworkIndex];
-                        bigger = recorded[recordedIndex];
                     }
 
-                    float ratio = bigger / smaller;
-                    //Log.d("na mit jelez: " + String.valueOf(j)," hi "+ String.valueOf(homework[homeworkIndex]) + "  ri " + String.valueOf(recorded[recordedIndex]) + "   b " + String.valueOf(bigger)+"   s "+String.valueOf(smaller) + "  rat "+String.valueOf(ratio));
 
-                    if (0.95f <= ratio && ratio > 0.05f) {
+                    if (bigger == smaller) {
+
                         correct++;
+                        firstMinusOneError = true;
+                    } else if (smaller == -1 || bigger == -1) {
+
+                        // one = -1, other != -1 ==> mistake ( just consecutive -1 means error in guitar play, single -1 means FFT algorithm imperfect)
+                        if (!firstMinusOneError)
+                            missed++;
+                        else
+                            firstMinusOneError = false;
+
                     } else {
-                        missed++;
+
+                        // bigger != smaller ( can be: tiny gap between notes, overtone, wrong note)
+                        int difference = Integer.MIN_VALUE;
+                        int nextDifference = bigger;
+
+                        while (nextDifference >= -5) {
+
+                            nextDifference -= smaller;
+
+                            if (nextDifference < -5) {
+                                // examination starts
+                                if (difference >= -5 && difference <= 5)
+                                    correct++;
+                                else
+                                    missed++;
+
+                                break;
+                            }
+                            difference = nextDifference;
+                        }
+                        firstMinusOneError = true;
                     }
+
+
+                     Log.d("na mit jelez: " + String.valueOf(j), "  hi " + String.valueOf(homework[homeworkIndex]) + "  ri " + String.valueOf(recorded[recordedIndex]) +"  b "+String.valueOf(bigger)+"  s "+String.valueOf(smaller)+"   c " + String.valueOf(correct) + "  m " + String.valueOf(missed));
+
                     homeworkIndex++;
                     recordedIndex++;
                 }
 
                 float tempResult = ((float) correct * 100) / (correct + missed);
 
-                if (tempResult > bestResult)
+                if (tempResult > bestResult) {
                     bestResult = tempResult;
+                    Log.d("best match", String.valueOf(j) + "   rt" + String.valueOf(runTwice)+"  c: "+String.valueOf(correct)+"  m:"+String.valueOf(missed));
+                }
 
             }
         }
