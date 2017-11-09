@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
+import android.widget.TextView;
 
 
 public class Tutor extends AppCompatActivity {
@@ -22,16 +23,20 @@ public class Tutor extends AppCompatActivity {
     final int SAMPLE_RATE = 44100;
     final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";//
 
-    boolean isSoundPlaying, isRecording, isRecordPlaying;
+    boolean isSoundPlaying, isRecording, isRecordPlaying, isPracticingMetronme;
 
     Button playStopButton, recStopButton, playRecStopRecButton;
     MediaPlayer mediaPlayer;
     RadioButton metronome;
+    TextView metronomeCounter;
 
     SoundRecorder soundRecorder;
     SoundAnalyser soundAnalyser;
     HomeWork homework;
     ProgressBar progressBar;
+
+    Thread practiceMetronome ;
+    Thread practiceClick ;
 
     Tick tick;
 
@@ -50,6 +55,7 @@ public class Tutor extends AppCompatActivity {
         playStopButton = (Button) findViewById(R.id.button_play_stop);
         recStopButton = (Button) findViewById(R.id.button_rec_stop);
         playRecStopRecButton = (Button) findViewById(R.id.button_playrec_stoprec);
+        metronomeCounter = (TextView) findViewById(R.id.metronomeCounter);
 
         ((ImageView) findViewById(R.id.imageView_tab)).setImageResource(homework.getTabId());
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -57,7 +63,7 @@ public class Tutor extends AppCompatActivity {
 
     public void onButtonPlayClick(View v) {
 
-        if ( !isSoundPlaying && !isRecordPlaying) {
+        if (!isSoundPlaying && !isRecordPlaying) {
             startSoundPlay();
         } else if (!isRecordPlaying) {
             stopSoundPlay();
@@ -84,12 +90,28 @@ public class Tutor extends AppCompatActivity {
 
     public void onButtonPlayRecStopRecClick(View v) {
 
-        if ( !isRecordPlaying && !isSoundPlaying ) {
+        if (!isRecordPlaying && !isSoundPlaying) {
             startRecordPlay();
         } else if (!isSoundPlaying) {
             stopRecordPlay();
         }
     }
+
+    public void onStartStopPracticingMetronome(View v){
+
+        if( !isPracticingMetronme && !isRecording && !isSoundPlaying && !isRecordPlaying){
+
+            isPracticingMetronme = true;
+            practiceMetronome();
+
+        }else if(isPracticingMetronme){
+
+            isPracticingMetronme= false;
+            stopPracticeMetronome();
+        }
+    }
+
+
 
     private void startRecordPlay() {
 
@@ -150,21 +172,20 @@ public class Tutor extends AppCompatActivity {
         }
     }
 
-    private void startRecording() { // creates new audio recorder instance, start it, new recording thread and new metronome
+    private void startRecording() { // creates new audio recorder instance, start recording thread and metronome
 
         soundRecorder = new SoundRecorder();
 
         isRecording = true;
 
-
         Thread recordAudioThread = soundRecorder.startRecording();
-        Thread startMetronome = initializeMetronome();
-        Thread playPreCount = playPreCount();
+        Thread startMetronome = initializeMetronome(true);
+        Thread playPreCount = playClick(4);
 
 
         playPreCount.start();
 
-        try {
+        try { // waits for 4 clicks, then start recording
             playPreCount.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -180,32 +201,33 @@ public class Tutor extends AppCompatActivity {
 
             soundRecorder.stopRecording();
             isRecording = false;
+
         }
     }
 
-    private Thread playPreCount() {
+    private Thread playClick(final int beats) {
 
-        final SoundPool soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 0); // 1?????????
+        final SoundPool soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
         final int soundId = soundPool.load(this, R.raw.metronome_click, 1);
-
 
         return new Thread(new Runnable() {
             public void run() {
 
-                for (int i = 0; i < 4; i++) {
+                for (int i = 0; i < beats; i++) {
 
                     soundPool.play(soundId, 1, 1, 1, 1, 1);
                     try {
                         Thread.currentThread().sleep(tick.milliSeconds, tick.nanoSeconds);
                     } catch (InterruptedException e) {
-                        Log.d("PreCount thread error", e.getMessage());
+                        break;
                     }
                 }
             }
-        }, "PreCount Thread");
+        }, "Click Thread");
+
     }
 
-    private Thread initializeMetronome() {
+    private Thread initializeMetronome(final boolean withRecording) {
 
         final Handler handler = new Handler(getApplicationContext().getMainLooper());
 
@@ -213,25 +235,53 @@ public class Tutor extends AppCompatActivity {
 
             public void run() {
 
-                for (int i = 0; i < homework.getBeats() && soundRecorder.isSoundRecording(); i++) {
+                for (int i = 0; i < homework.getBeats() /*&& soundRecorder.isSoundRecording()*/; i++) {
 
+                    final int counter = i;
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
+
                             metronome.setChecked(!metronome.isChecked());
+                            metronomeCounter.setText("4/" + String.valueOf((counter % 4) + 1));
                         }
                     });
                     try {
                         Thread.currentThread().sleep(tick.milliSeconds, tick.nanoSeconds);
                     } catch (InterruptedException e) {
-                        Log.d("Metronome thread error", e.getMessage());
+                        break;
                     }
 
                 }
-                stopRecording();
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        metronomeCounter.setText("4/4");
+                    }
+                });
+
+                if(withRecording)
+                    stopRecording();
             }
         }, "Metronome Thread");
 
+    }
+
+    private void practiceMetronome(){
+
+        practiceMetronome = initializeMetronome(false);
+        practiceClick = playClick(homework.getBeats());
+
+
+        practiceMetronome.start();
+        practiceClick.start();
+    }
+
+    private void stopPracticeMetronome() {
+        practiceMetronome.interrupt();
+        practiceClick.interrupt();
+
+      //  metronomeCounter.setText("4/4");
     }
 
     private void analyseRecord() {
