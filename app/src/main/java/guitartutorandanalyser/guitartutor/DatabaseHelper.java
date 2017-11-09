@@ -119,7 +119,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         super.close();
     }
 
-    public boolean updateDatabase(HomeWork homework) { // write this again!!!!!!!!
+    public boolean updateDatabaseRecord(HomeWork homework) {
 
         ContentValues contentValues = new ContentValues();
    //     contentValues.put(Column.ID, homework.get_id());
@@ -135,7 +135,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
   //      contentValues.put(Column.SONGID,  homework.getSoundId());
 
         try {
-            myDataBase.update("mytable", contentValues, "_id = ?", new String[]{String.valueOf(homework.get_id())});
+            this.openDataBase();
+            myDataBase.update(TABLE_HOMEWORKS, contentValues, "_id = ?", new String[]{String.valueOf(homework.get_id())});
+            this.close();
 
         } catch (Exception e) {
             return false;

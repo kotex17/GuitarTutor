@@ -29,6 +29,13 @@ public class BestScores extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.bestScoresListView);
 
 
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
         populateListView();
 
         onListItemClick();

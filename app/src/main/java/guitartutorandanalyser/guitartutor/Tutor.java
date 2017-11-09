@@ -3,12 +3,12 @@ package guitartutorandanalyser.guitartutor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -22,9 +22,9 @@ public class Tutor extends AppCompatActivity {
     final int SAMPLE_RATE = 44100;
     final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";//
 
-    boolean isSoundPlaying;
+    boolean isSoundPlaying, isRecording, isRecordPlaying;
 
-    Button playStopButton;
+    Button playStopButton, recStopButton, playRecStopRecButton;
     MediaPlayer mediaPlayer;
     RadioButton metronome;
 
@@ -48,16 +48,19 @@ public class Tutor extends AppCompatActivity {
 
         metronome = (RadioButton) findViewById(R.id.metronomeButton);
         playStopButton = (Button) findViewById(R.id.button_play_stop);
+        recStopButton = (Button) findViewById(R.id.button_rec_stop);
+        playRecStopRecButton = (Button) findViewById(R.id.button_playrec_stoprec);
+
         ((ImageView) findViewById(R.id.imageView_tab)).setImageResource(homework.getTabId());
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
     }
 
     public void onButtonPlayClick(View v) {
 
-        if (isSoundPlaying) {
-            stopPlay();
-        } else {
-            startPlay();
+        if ( !isSoundPlaying && !isRecordPlaying) {
+            startSoundPlay();
+        } else if (!isRecordPlaying) {
+            stopSoundPlay();
         }
     }
 
@@ -66,58 +69,125 @@ public class Tutor extends AppCompatActivity {
     }
 
     public void onButtonRecClick(View v) {
-        startRecording();
+
+        if (soundRecorder != null && isRecording) {
+
+            recStopButton.setText("Rec");
+            stopRecording();
+        } else {
+
+            recStopButton.setText("Stop rec");
+            startRecording();
+        }
+
     }
 
-    public void onButtonStopClick(View v) {
-        stopRecording();
+    public void onButtonPlayRecStopRecClick(View v) {
+
+        if ( !isRecordPlaying && !isSoundPlaying ) {
+            startRecordPlay();
+        } else if (!isSoundPlaying) {
+            stopRecordPlay();
+        }
     }
 
+    private void startRecordPlay() {
 
-    private void stopPlay() {
+        mediaPlayer = MediaPlayer.create(this, Uri.parse(PATH_NAME));
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                playRecStopRecButton.setText("Play Rec");
+                isRecordPlaying = false;
+                mediaPlayer.release();
+            }
+
+        });
+
+        mediaPlayer.start();
+        isRecordPlaying = true;
+        playRecStopRecButton.setText("Stop");
+    }
+
+    private void stopRecordPlay() {
 
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.release();
-            isSoundPlaying = false;
-            playStopButton.setText("Play");
+            isRecordPlaying = false;
+            playRecStopRecButton.setText("Play Rec");
         }
     }
 
-    private void startPlay() {
+    private void startSoundPlay() {
 
         mediaPlayer = MediaPlayer.create(this, homework.getSoundId());
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                playStopButton.setText("Play Song");
+                isSoundPlaying = false;
+                mediaPlayer.release();
+            }
+
+        });
+
         mediaPlayer.start();
         isSoundPlaying = true;
         playStopButton.setText("Stop");
 
     }
 
+    private void stopSoundPlay() {
+
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            isSoundPlaying = false;
+            playStopButton.setText("Play Song");
+        }
+    }
+
     private void startRecording() { // creates new audio recorder instance, start it, new recording thread and new metronome
 
         soundRecorder = new SoundRecorder();
+
+        isRecording = true;
+
 
         Thread recordAudioThread = soundRecorder.startRecording();
         Thread startMetronome = initializeMetronome();
         Thread playPreCount = playPreCount();
 
-        playPreCount.start();
-        while (playPreCount.getState() != Thread.State.TERMINATED) {
 
+        playPreCount.start();
+
+        try {
+            playPreCount.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+
         recordAudioThread.start();
         startMetronome.start();
     }
 
     private void stopRecording() {
-        if (soundRecorder != null)
+
+        if (soundRecorder != null) {
+
             soundRecorder.stopRecording();
+            isRecording = false;
+        }
     }
 
     private Thread playPreCount() {
 
         final SoundPool soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 0); // 1?????????
         final int soundId = soundPool.load(this, R.raw.metronome_click, 1);
+
 
         return new Thread(new Runnable() {
             public void run() {
@@ -177,7 +247,8 @@ public class Tutor extends AppCompatActivity {
 
         super.onPause();
         stopRecording();
-        stopPlay();
+        stopSoundPlay();
+        stopRecordPlay();
         progressBar.setVisibility(View.INVISIBLE);
     }
 

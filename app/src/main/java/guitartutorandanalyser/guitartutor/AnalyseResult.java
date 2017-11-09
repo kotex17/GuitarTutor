@@ -1,5 +1,6 @@
 package guitartutorandanalyser.guitartutor;
 
+import android.content.Intent;
 import android.icu.util.Calendar;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -7,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -41,7 +43,10 @@ public class AnalyseResult extends AppCompatActivity {
         resultTextFeedback = (TextView) findViewById(R.id.resultTextFeedback);
         progressbar = (ProgressBar) findViewById(R.id.progressBarResult);
 
-        updateDataBase(Integer.parseInt(result));
+        //updateDataBase(Integer.parseInt(result));
+        //test
+        updateDataBase(90);
+
 
         showProgress(Integer.parseInt(result)).start();
 
@@ -134,6 +139,7 @@ public class AnalyseResult extends AppCompatActivity {
 
     private void updateDataBase(int result) {
 
+
         boolean updateHomework = false;
 
         Log.d("homework", String.valueOf( currentHomework.getRecordpoint()) + "   ...  "+String.valueOf(currentHomework.getCompleted()));
@@ -164,11 +170,24 @@ public class AnalyseResult extends AppCompatActivity {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    //  dbHelper.updateDatabase(currentHomework);
+                   boolean success =  dbHelper.updateDatabaseRecord(currentHomework);
+                    Log.d("succes: ", String.valueOf(success));
                 }
             }).start();
         }
 
+    }
+
+    public void backToStartMenu(View v){
+
+        Intent intent = new Intent(this, GuitarTutorMain.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+    }
+
+    public void tryAgain(View v){
+
+        finish();
     }
 
 }
