@@ -1,19 +1,18 @@
 package guitartutorandanalyser.guitartutor;
 
 import android.content.Intent;
-import android.icu.util.Calendar;
+
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.format.DateFormat;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.sql.Date;
-import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class AnalyseResult extends AppCompatActivity {
 
@@ -21,7 +20,7 @@ public class AnalyseResult extends AppCompatActivity {
     TextView resultTextGratulate, resultTextName, resultTextScore, resultTextFeedback;
     int progressBarStatus;
 
-    DatabaseHelper dbHelper ;
+    DatabaseHelper dbHelper;
     HomeWork currentHomework;
 
     @Override
@@ -43,12 +42,16 @@ public class AnalyseResult extends AppCompatActivity {
         resultTextFeedback = (TextView) findViewById(R.id.resultTextFeedback);
         progressbar = (ProgressBar) findViewById(R.id.progressBarResult);
 
-        //updateDataBase(Integer.parseInt(result));
-        //test
-        updateDataBase(90);
+        Thread progress = showProgress(Integer.parseInt(result));
+        progress.start();
 
+        try {
+            progress.join();
+        } catch (InterruptedException e) {
 
-        showProgress(Integer.parseInt(result)).start();
+        }
+
+        updateHomeWork(Integer.parseInt(result));
 
     }
 
@@ -137,55 +140,47 @@ public class AnalyseResult extends AppCompatActivity {
 
     }
 
-    private void updateDataBase(int result) {
+    private void updateHomeWork(int result) {
 
-
-        boolean updateHomework = false;
-
-        Log.d("homework", String.valueOf( currentHomework.getRecordpoint()) + "   ...  "+String.valueOf(currentHomework.getCompleted()));
+        boolean updateNeeded = false;
 
         if (result > currentHomework.getRecordpoint()) {
+
             currentHomework.setRecordpoint(result);
-            updateHomework = true;
 
-            java.util.Date d = new java.util.Date();
+            Date d = new Date();
+            currentHomework.setRecordDate(String.valueOf(d.getYear() + 1900) + "." + String.valueOf(d.getMonth()) + "." + String.valueOf(d.getDay()) + ".");
 
-            d.getTime();
-            try {
-                Log.d("datum", d.toString() + "   ...  " + (new SimpleDateFormat("yyyy-MM-dd")).parse(d.toString()));
-            }catch (Exception e){}
-
-            currentHomework.setRecordDate(d.toString());
+            updateNeeded = true;
         }
-
 
 
         if (result >= 70 && currentHomework.getCompleted() == 0) {
+
             currentHomework.setCompleted(1);
-            updateHomework = true;
+            updateNeeded = true;
         }
 
-        if (updateHomework) {
+        if (updateNeeded) {
 
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                   boolean success =  dbHelper.updateDatabaseRecord(currentHomework);
-                    Log.d("succes: ", String.valueOf(success));
+                    dbHelper.updateDatabaseRecord(currentHomework);
                 }
             }).start();
         }
 
     }
 
-    public void backToStartMenu(View v){
+    public void backToStartMenu(View v) {
 
         Intent intent = new Intent(this, GuitarTutorMain.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 
-    public void tryAgain(View v){
+    public void tryAgain(View v) {
 
         finish();
     }

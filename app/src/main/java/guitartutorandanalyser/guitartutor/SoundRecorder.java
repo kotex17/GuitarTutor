@@ -155,9 +155,9 @@ public class SoundRecorder {
 
     public void stopRecording() {
 
-        if (recorder != null) {
+        if (recorder != null && isSoundRecording) {
 
-            recorder.stop();
+
             recorder.release();
             recorder = null;
             isSoundRecording = false;
@@ -166,7 +166,7 @@ public class SoundRecorder {
         updateWavHeader();
     }
 
-    public boolean isSoundRecording() {
+   /* public boolean isSoundRecording() {
         return isSoundRecording;
-    }
+    }*/
 }
