@@ -19,7 +19,7 @@ import android.widget.TextView;
 
 public class Tutor extends AppCompatActivity {
 
-
+//comment
     final int SAMPLE_RATE = 44100;
     final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";//
 
