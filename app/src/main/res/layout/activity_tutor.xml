@@ -9,7 +9,7 @@
     <Button
         android:id="@+id/button_play_stop"
         style="@style/Widget.AppCompat.Button.Small"
-        android:layout_width="wrap_content"
+        android:layout_width="110dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="8dp"
@@ -22,7 +22,7 @@
     <Button
         android:id="@+id/button_rec_stop"
         style="@style/Widget.AppCompat.Button.Small"
-        android:layout_width="wrap_content"
+        android:layout_width="102dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
@@ -35,7 +35,7 @@
     <Button
         android:id="@+id/button_analyse"
         style="@style/Widget.AppCompat.Button.Small"
-        android:layout_width="wrap_content"
+        android:layout_width="110dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="8dp"
@@ -48,7 +48,7 @@
     <Button
         android:id="@+id/button_playrec_stoprec"
         style="@style/Widget.AppCompat.Button.Small"
-        android:layout_width="wrap_content"
+        android:layout_width="102dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
@@ -72,8 +72,8 @@
 
     <RadioButton
         android:id="@+id/metronomeButton"
-        android:layout_width="31dp"
-        android:layout_height="32dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_marginBottom="24dp"
         android:duplicateParentState="false"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -81,8 +81,8 @@
 
     <TextView
         android:id="@+id/metronomeCounter"
-        android:layout_width="27dp"
-        android:layout_height="32dp"
+        android:layout_width="24dp"
+        android:layout_height="30dp"
         android:text="4/4"
         android:textAlignment="viewStart"
         android:textAppearance="@style/TextAppearance.AppCompat.Button"
@@ -91,7 +91,7 @@
 
     <ScrollView
         android:id="@+id/imageScrollView"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="250dp"
         android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
@@ -119,14 +119,14 @@
     <Button
         android:id="@+id/button_practice_metronome"
         style="@style/Widget.AppCompat.Button.Small"
-        android:layout_width="wrap_content"
+        android:layout_width="62dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:onClick="onStartStopPracticingMetronome"
-        android:text="click"
+        android:text="Click"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/metronomeButton"
-        android:layout_marginEnd="8dp" />
+        app:layout_constraintRight_toLeftOf="@+id/metronomeButton" />
 
 </android.support.constraint.ConstraintLayout>
