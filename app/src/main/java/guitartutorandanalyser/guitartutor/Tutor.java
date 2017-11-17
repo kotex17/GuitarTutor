@@ -8,6 +8,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -16,13 +17,15 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+
 
 public class Tutor extends AppCompatActivity {
 
     final int SAMPLE_RATE = 44100;
     final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";//
 
-    boolean isSoundPlaying, isRecording, isRecordPlaying, isPracticingMetronme, analyseEnabled;
+    boolean isSoundPlaying, isRecording, isRecordPlaying, isPracticingMetronme, analyseEnabled, reachedEndOfRecordTime;
 
     Button playStopButton, recStopButton, playRecStopRecButton;
     MediaPlayer mediaPlayer;
@@ -59,22 +62,26 @@ public class Tutor extends AppCompatActivity {
         recStopButton = (Button) findViewById(R.id.button_rec_stop);
         playRecStopRecButton = (Button) findViewById(R.id.button_playrec_stoprec);
         metronomeCounter = (TextView) findViewById(R.id.metronomeCounter);
-
-        ((ImageView) findViewById(R.id.imageView_tab)).setImageResource(homework.getTabId());
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
 
-        analyseEnabled = false;
+        ((ImageView) findViewById(R.id.imageView_tab)).setImageResource(homework.getTabId());
+        ((TextView) findViewById(R.id.textView_title)).setText(homework.getName());
+
+        File file = new File(PATH_NAME);
+        if (file.exists())
+            file.delete();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        playStopButton.setText("Lejátszás");
+        playStopButton.setText("Meghallgatom");
         recStopButton.setText("Rec");
-        playRecStopRecButton.setText("Lejátszás");
+        playRecStopRecButton.setText("Visszajátszás");
         metronomeCounter.setText("4/4");
+
     }
 
     @Override
@@ -97,27 +104,27 @@ public class Tutor extends AppCompatActivity {
                 stopPracticeMetronome();
 
             progressBar.setVisibility(View.INVISIBLE);
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
     }
 
     public void onButtonPlayClick(View v) {
 
-        if (!isSoundPlaying && !isRecordPlaying) {
+        if (!isSoundPlaying && !isRecordPlaying && !isRecording) {
             startSoundPlay();
             playStopButton.setText("Stop");
 
         } else if (!isRecordPlaying) {
             stopSoundPlay();
-            playStopButton.setText("Lejátszás");
+            playStopButton.setText("Meghallgatom");
 
         }
     }
 
     public void onButtonAnalyseClick(View v) {
 
-        if (analyseEnabled)
+        if (analyseEnabled && !isRecording && !isPracticingMetronme && !isSoundPlaying && !isRecordPlaying)
             analyseRecord();
         else
             Toast.makeText(this, "A felvétel nem elég hosszú", Toast.LENGTH_LONG).show();
@@ -129,7 +136,7 @@ public class Tutor extends AppCompatActivity {
 
             recStopButton.setText("Rec");
             stopRecording();
-        } else {
+        } else if (!isSoundPlaying && !isRecordPlaying && !isPracticingMetronme) {
 
             recStopButton.setText("Stop rec");
             startRecording();
@@ -139,13 +146,16 @@ public class Tutor extends AppCompatActivity {
 
     public void onButtonPlayRecStopRecClick(View v) {
 
-        if (!isRecordPlaying && !isSoundPlaying) {
+
+        if (!isRecordPlaying && !isSoundPlaying && !isPracticingMetronme && !isRecording && (new File(PATH_NAME)).exists()) {
 
             playRecStopRecButton.setText("Stop");
             startRecordPlay();
-        } else if (!isSoundPlaying) {
 
-            playRecStopRecButton.setText("Play Rec");
+        } else if (!isSoundPlaying && isRecordPlaying) {
+
+            playRecStopRecButton.setText("Visszajátszás");
+
             stopRecordPlay();
         }
     }
@@ -172,7 +182,7 @@ public class Tutor extends AppCompatActivity {
 
             @Override
             public void onCompletion(MediaPlayer mp) {
-                playRecStopRecButton.setText("Play Rec");
+                playRecStopRecButton.setText("Visszajátszás");
                 isRecordPlaying = false;
                 mediaPlayer.release();
             }
@@ -200,7 +210,7 @@ public class Tutor extends AppCompatActivity {
 
             @Override
             public void onCompletion(MediaPlayer mp) {
-                playStopButton.setText("Lejátszás");
+                playStopButton.setText("Meghallgatom");
                 isSoundPlaying = false;
                 mediaPlayer.release();
             }
@@ -243,18 +253,30 @@ public class Tutor extends AppCompatActivity {
 
         recordAudioThread.start();
         recordingWithMetronome.start();
+
     }
 
     private void stopRecording() {
 
-        if (soundRecorder != null && isRecording && recordingWithMetronome != null && recordingWithMetronome.isAlive())
+        if (soundRecorder != null && isRecording && recordingWithMetronome != null && recordingWithMetronome.isAlive() && !reachedEndOfRecordTime) {
+
+            Log.d("sstop1", "stopRecording: ");
+            isRecording = false;
             recordingWithMetronome.interrupt();
-
-        if (soundRecorder != null && isRecording)
             soundRecorder.stopRecording();
+        }
 
 
-        isRecording = false;
+        if (soundRecorder != null && isRecording && reachedEndOfRecordTime) {
+
+            Log.d("sstop2", "stopRecording: ");
+            isRecording = false;
+            analyseEnabled = true;
+            reachedEndOfRecordTime = false;
+
+            soundRecorder.stopRecording();
+        }
+
     }
 
     private Thread playClick(final int beats) {
@@ -287,7 +309,7 @@ public class Tutor extends AppCompatActivity {
 
             public void run() {
 
-                for (int i = 0; i < homework.getBeats() /*&& soundRecorder.isSoundRecording()*/; i++) {
+                for (int i = 0; i < homework.getBeats() ; i++) {
 
                     final int counter = i;
                     handler.post(new Runnable() {
@@ -312,8 +334,18 @@ public class Tutor extends AppCompatActivity {
                     }
                 });
 
-                if (withRecording )
+                if (withRecording) {
+                    reachedEndOfRecordTime = true;
                     stopRecording();
+                }
+
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        recStopButton.setText("Rec");
+                    }
+                });
+
             }
         }, "Metronome Thread");
 

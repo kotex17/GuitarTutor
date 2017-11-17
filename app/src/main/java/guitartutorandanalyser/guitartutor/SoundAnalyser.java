@@ -13,16 +13,18 @@ import be.tarsos.dsp.pitch.PitchDetectionHandler;
 import be.tarsos.dsp.pitch.PitchDetectionResult;
 import be.tarsos.dsp.pitch.PitchProcessor;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 
 public class SoundAnalyser {
-
 
     HomeWork currentHomeWork;
     String recordedAudioMap;
     Context context;
-    int processBufferSize = 2048;
-    int SAMPLE_RATE;
-    String PATH_NAME;
+    final int BUFFER_SIZE = 2048;
+    final int SAMPLE_RATE;
+    final String PATH_NAME;
 
 
     public SoundAnalyser(HomeWork homework, Context context, int SAMPLE_RATE, String PATH_NAME) {
@@ -39,27 +41,29 @@ public class SoundAnalyser {
 
         new AndroidFFMPEGLocator(context);
 
-        final AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(PATH_NAME, SAMPLE_RATE, processBufferSize, 0);
+        final AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(PATH_NAME, SAMPLE_RATE, BUFFER_SIZE, 0);
 
         // audiofactory(from pipe, wav header is ignored, pcm samples captured) ---> audiodispathcer(plays a file and sends float arrays to registered AudioProcessor )
         // AudioProcessor = PitchProcessor, PitchdetectionHandler = Interface( handlePitch())
 
 
-        dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, SAMPLE_RATE, processBufferSize, new PitchDetectionHandler() {
+        dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, SAMPLE_RATE, BUFFER_SIZE, new PitchDetectionHandler() {
 
             @Override
             public void handlePitch(PitchDetectionResult pitchDetectionResult,
                                     AudioEvent audioEvent) {
-                final int pitchInHz = (int) pitchDetectionResult.getPitch();
-                // int is enough, because guitar has freats, so you cant go wrong(its not a violin or an instrument without freats)
+                final float pitchInHz = roundFloat2Decimal( pitchDetectionResult.getPitch()) ;
+
+                Log.d("pitc AAA", String.valueOf(pitchInHz));
+                // store in string, float[] array length is not known at this point
                 try {
                     recordedAudioMap += String.valueOf(pitchInHz) + ';';
 
                 } catch (Exception e) {
+
                 }
             }
         }));
-
 
         Thread audioDispathcerThread = new Thread(dispatcher, "Audio Dispatcher");
         audioDispathcerThread.setPriority(Thread.MAX_PRIORITY);
@@ -67,6 +71,16 @@ public class SoundAnalyser {
 
         compareResult(audioDispathcerThread);
 
+    }
+
+    private float roundFloat2Decimal(float number) {
+
+       // BigDecimal bd = new BigDecimal(number, new MathContext(4))).floatValue();
+
+
+        BigDecimal bd = new BigDecimal(number);
+        bd = bd.setScale(2, RoundingMode.HALF_UP);
+        return bd.floatValue();
     }
 
     private void compareResult(Thread audioDispathcerThread) {
@@ -80,8 +94,8 @@ public class SoundAnalyser {
                 try {
                     threadToWaitFor.join();
 
-                    int[] intPitchMapHomeWork = getIntPitchMap(currentHomeWork.getMap());
-                    int[] intPitchMapRecord = getIntPitchMap(recordedAudioMap);
+                    float[] intPitchMapHomeWork = getFloatPitchMap(currentHomeWork.getMap());
+                    float[] intPitchMapRecord = getFloatPitchMap(recordedAudioMap);
 
                     Log.d("maps hw: ", currentHomeWork.getMap());
                     Log.d("maps re: ", recordedAudioMap);
@@ -104,12 +118,11 @@ public class SoundAnalyser {
 
     }
 
-    private int[] getIntPitchMap(String map) throws Exception {
-
+    private float[] getFloatPitchMap(String map) throws Exception {
 
         int countDetectedPitches = map.length() - map.replace(";", "").length();
 
-        int[] intPitchMap = new int[countDetectedPitches];
+        float[] floatPitchMap = new float[countDetectedPitches];
 
         int pitchMapIndex = 0;
         String onePitch = "";
@@ -122,16 +135,16 @@ public class SoundAnalyser {
                 onePitch += c;
             } else {
 
-                intPitchMap[pitchMapIndex] = (int) Double.parseDouble(onePitch);
+                floatPitchMap[pitchMapIndex] = Float.parseFloat(onePitch);
                 pitchMapIndex++;
                 onePitch = "";
             }
         }
 
-        return intPitchMap;
+        return floatPitchMap;
     }
 
-    private int compareIntPitchMaps(int[] homework, int[] recorded) {
+    private int compareIntPitchMaps(float[] homework, float[] recorded) {
 
         int correct;
         int missed;
@@ -164,8 +177,8 @@ public class SoundAnalyser {
                 while (homework.length > homeworkIndex && recorded.length > recordedIndex) {
                     // because of overtone we have to check multiple values, moreover guitar is an imperfect instrument we give 5 Hz threshold to each note
 
-                    int bigger = recorded[recordedIndex];
-                    int smaller = homework[homeworkIndex];
+                    float bigger = recorded[recordedIndex];
+                    float smaller = homework[homeworkIndex];
 
                     if (smaller > bigger) {
                         bigger = homework[homeworkIndex];
@@ -188,16 +201,16 @@ public class SoundAnalyser {
                     } else {
 
                         // bigger != smaller ( can be: tiny gap between notes, overtone, wrong note)
-                        int difference = Integer.MIN_VALUE;
-                        int nextDifference = bigger;
+                        float difference = Float.MIN_VALUE;
+                        float nextDifference = bigger;
 
-                        while (nextDifference >= -5) {
+                        while (nextDifference >= -4) {
 
                             nextDifference -= smaller;
 
-                            if (nextDifference < -5) {
+                            if (nextDifference < -4) {
                                 // examination starts
-                                if (difference >= -5 && difference <= 5)
+                                if (difference >= -4 && difference <= 4)
                                     correct++;
                                 else
                                     missed++;
@@ -210,7 +223,7 @@ public class SoundAnalyser {
                     }
 
 
-                     Log.d("na mit jelez: " + String.valueOf(j), "  hi " + String.valueOf(homework[homeworkIndex]) + "  ri " + String.valueOf(recorded[recordedIndex]) +"  b "+String.valueOf(bigger)+"  s "+String.valueOf(smaller)+"   c " + String.valueOf(correct) + "  m " + String.valueOf(missed));
+                    //   Log.d("na mit jelez: " + String.valueOf(j), "  hi " + String.valueOf(homework[homeworkIndex]) + "  ri " + String.valueOf(recorded[recordedIndex]) +"  b "+String.valueOf(bigger)+"  s "+String.valueOf(smaller)+"   c " + String.valueOf(correct) + "  m " + String.valueOf(missed));
 
                     homeworkIndex++;
                     recordedIndex++;
@@ -220,7 +233,7 @@ public class SoundAnalyser {
 
                 if (tempResult > bestResult) {
                     bestResult = tempResult;
-                    Log.d("best match", String.valueOf(j) + "   rt" + String.valueOf(runTwice)+"  c: "+String.valueOf(correct)+"  m:"+String.valueOf(missed));
+                    Log.d("best match", String.valueOf(j) + "   rt" + String.valueOf(runTwice) + "  c: " + String.valueOf(correct) + "  m:" + String.valueOf(missed));
                 }
 
             }

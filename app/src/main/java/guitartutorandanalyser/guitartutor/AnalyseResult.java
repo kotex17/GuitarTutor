@@ -42,16 +42,18 @@ public class AnalyseResult extends AppCompatActivity {
         resultTextFeedback = (TextView) findViewById(R.id.resultTextFeedback);
         progressbar = (ProgressBar) findViewById(R.id.progressBarResult);
 
+        updateHomeWork(Integer.parseInt(result));
+
         Thread progress = showProgress(Integer.parseInt(result));
         progress.start();
 
-        try {
+       /* try {
             progress.join();
         } catch (InterruptedException e) {
 
-        }
+        }*/
 
-        updateHomeWork(Integer.parseInt(result));
+
 
     }
 

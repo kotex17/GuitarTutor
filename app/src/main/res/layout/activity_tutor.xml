@@ -9,39 +9,52 @@
     <Button
         android:id="@+id/button_play_stop"
         style="@style/Widget.AppCompat.Button.Small"
-        android:layout_width="110dp"
+        android:layout_width="104dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:onClick="onButtonPlayClick"
-        android:text="Lejátszás"
+
+        android:padding="0dp"
+        android:paddingBottom="0dp"
+        android:paddingEnd="0dp"
+        android:paddingLeft="0dp"
+        android:paddingRight="0dp"
+        android:paddingStart="0dp"
+        android:paddingTop="0dp"
+        android:text="Meghallgatom"
+        android:textSize="11sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent" />
 
     <Button
         android:id="@+id/button_rec_stop"
         style="@style/Widget.AppCompat.Button.Small"
-        android:layout_width="102dp"
+        android:layout_width="90dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:onClick="onButtonRecClick"
+        android:padding="0dp"
         android:text="Rec"
+        android:textSize="11sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/button_playrec_stoprec" />
 
     <Button
         android:id="@+id/button_analyse"
         style="@style/Widget.AppCompat.Button.Small"
-        android:layout_width="110dp"
+        android:layout_width="90dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:onClick="onButtonAnalyseClick"
+        android:padding="0dp"
         android:text="Analizálás"
+        android:textSize="11sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@+id/button_play_stop" />
 
@@ -54,7 +67,9 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:onClick="onButtonPlayRecStopRecClick"
-        android:text="Lejátszás"
+        android:padding="0dp"
+        android:text="Visszajátszás"
+        android:textSize="11sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
@@ -89,19 +104,45 @@
         app:layout_constraintRight_toLeftOf="@+id/button_rec_stop"
         app:layout_constraintTop_toBottomOf="@+id/metronomeButton" />
 
+    <Button
+        android:id="@+id/button_practice_metronome"
+        style="@style/Widget.AppCompat.Button.Small"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:onClick="onStartStopPracticingMetronome"
+        android:padding="0dp"
+        android:text="Click"
+        android:textSize="11sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/metronomeButton" />
+
+    <TextView
+        android:id="@+id/textView_title"
+        android:layout_width="385dp"
+        android:layout_height="15dp"
+        android:text="TextView"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:layout_editor_absoluteY="9dp" />
+
     <ScrollView
         android:id="@+id/imageScrollView"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="250dp"
         android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintHorizontal_bias="0.0"
+        android:layout_marginTop="-9dp"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/textView_title">
 
 
         <ImageView
@@ -115,18 +156,5 @@
             app:srcCompat="@android:drawable/screen_background_light_transparent" />
 
     </ScrollView>
-
-    <Button
-        android:id="@+id/button_practice_metronome"
-        style="@style/Widget.AppCompat.Button.Small"
-        android:layout_width="62dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:onClick="onStartStopPracticingMetronome"
-        android:text="Click"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/metronomeButton" />
 
 </android.support.constraint.ConstraintLayout>
