@@ -17,8 +17,9 @@ import java.util.Date;
 public class AnalyseResult extends AppCompatActivity {
 
     ProgressBar progressbar;
-    TextView resultTextGratulate, resultTextName, resultTextScore, resultTextFeedback;
+    TextView resultTextGratulate, resultTextName, resultTextScore, resultTextFeedback, resultTextNewRecord;
     int progressBarStatus;
+    String feedback;
 
     DatabaseHelper dbHelper;
     HomeWork currentHomework;
@@ -40,20 +41,13 @@ public class AnalyseResult extends AppCompatActivity {
         resultTextName = (TextView) findViewById(R.id.resultTextName);
         resultTextScore = (TextView) findViewById(R.id.resultTextScore);
         resultTextFeedback = (TextView) findViewById(R.id.resultTextFeedback);
+        resultTextNewRecord = (TextView) findViewById(R.id.resultTextNewRecord);
+
         progressbar = (ProgressBar) findViewById(R.id.progressBarResult);
 
-        updateHomeWork(Integer.parseInt(result));
 
         Thread progress = showProgress(Integer.parseInt(result));
         progress.start();
-
-       /* try {
-            progress.join();
-        } catch (InterruptedException e) {
-
-        }*/
-
-
 
     }
 
@@ -69,7 +63,7 @@ public class AnalyseResult extends AppCompatActivity {
                     @Override
                     public void run() {
                         resultTextName.setText("Feladat: " + currentHomework.getName());
-                        resultTextScore.setText("Legjobb pontszám: " + String.valueOf(currentHomework.getRecordpoint()));
+                        resultTextScore.setText("Eddigi legjobb pontszám: " + String.valueOf(currentHomework.getRecordpoint()));
                     }
                 });
 
@@ -105,38 +99,53 @@ public class AnalyseResult extends AppCompatActivity {
                 });
 
 
-                for (int i = 0; i < 3; i++) {
-                    android.os.SystemClock.sleep(700);
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            resultTextFeedback.setText("");
-                        }
-                    });
+                if (result < 50) {
 
-                    android.os.SystemClock.sleep(700);
+                    feedback ="Próbáld újra! Gyakorlás teszi a mestert, ne add fel!";
 
-                    if (result >= 70) {
-                        if (result > currentHomework.getRecordpoint()) {
+                } else if (result >= 50 && result < 70) {
 
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    resultTextFeedback.setText("Feladat teljesítve! ***ÚJ CSÚCS!***");
-                                }
-                            });
+                    feedback = "Nagyon közel! Még egy kis türelem és menni fog!";
 
-                        } else {
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    resultTextFeedback.setText("Feladat teljesítve!");
-                                }
-                            });
-                        }
+                } else if (result >= 70) {
+
+                    feedback = "Feladat teljesítve!";
+                }
+
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        android.os.SystemClock.sleep(700);
+                        resultTextFeedback.setText(feedback);
+                    }
+                });
+
+                if (result > currentHomework.getRecordpoint()) {
+
+                    for (int i = 0; i < 4; i++) {
+
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                resultTextNewRecord.setText("");
+                            }
+                        });
+
+
+                        android.os.SystemClock.sleep(700);
+
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                resultTextNewRecord.setText("*** ÚJ CSÚCS ***");
+                            }
+                        });
+
+                        android.os.SystemClock.sleep(700);
                     }
                 }
 
+                updateHomeWork(result);
             }
         });
 

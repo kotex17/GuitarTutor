@@ -66,12 +66,18 @@ public class Songs extends AppCompatActivity {
 
         }
 
-        Cursor cursor = db.myDataBase.query(DatabaseHelper.TABLE_HOMEWORKS, new String[]{DatabaseHelper.Column.ID, DatabaseHelper.Column.TYPE, DatabaseHelper.Column.NAME}, DatabaseHelper.Column.TYPE + " = ?", new String[]{"song"}, null, null, null);
+        Cursor cursor = db.myDataBase.query(DatabaseHelper.TABLE_HOMEWORKS, new String[]{DatabaseHelper.Column.ID, DatabaseHelper.Column.TYPE, DatabaseHelper.Column.NAME, DatabaseHelper.Column.COMPLETED}, DatabaseHelper.Column.TYPE + " = ?", new String[]{"song"}, null, null, null);
 
         ArrayMap<String, String> idToSongName = new ArrayMap<String, String>();
 
         while (cursor.moveToNext()) {
-            idToSongName.put(String.valueOf(cursor.getInt(0)), cursor.getString(2));
+
+            String isCompleted = "";
+
+            if (cursor.getInt(3) == 1)
+                isCompleted = "✓";
+
+            idToSongName.put(String.valueOf(cursor.getInt(0)), cursor.getString(2) + " \t\t" + isCompleted);
         }
 
         cursor.close();
@@ -86,7 +92,7 @@ public class Songs extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
 
                 Intent tutorIntent = new Intent("guitartutorandanalyser.guitartutor.Tutor");
-                tutorIntent.putExtra("homeWorkId",idToSongName.keyAt(position));
+                tutorIntent.putExtra("homeWorkId", idToSongName.keyAt(position));
                 startActivity(tutorIntent);
 
             }
