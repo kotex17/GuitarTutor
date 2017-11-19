@@ -3,11 +3,10 @@ package guitartutorandanalyser.guitartutor;
 import android.content.Intent;
 
 import android.os.Handler;
-import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import android.util.Log;
+import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -159,8 +158,8 @@ public class AnalyseResult extends AppCompatActivity {
 
             currentHomework.setRecordpoint(result);
 
-            Date d = new Date();
-            currentHomework.setRecordDate(String.valueOf(d.getYear() + 1900) + "." + String.valueOf(d.getMonth()) + "." + String.valueOf(d.getDay()) + ".");
+            CharSequence date = DateFormat.format("yyyy.MM.dd.", new Date().getTime());
+            currentHomework.setRecordDate(date.toString());
 
             updateNeeded = true;
         }

@@ -3,13 +3,15 @@ package guitartutorandanalyser.guitartutor;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.icu.text.DateFormat;
+
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 
+import java.util.Date;
 
 
 public class GuitarTutorMain extends AppCompatActivity {
@@ -23,6 +25,10 @@ public class GuitarTutorMain extends AppCompatActivity {
         try {
             DatabaseHelper dbh = new DatabaseHelper(this);
             dbh.createDataBase();
+
+            Date d = new Date();
+            CharSequence s = DateFormat.format("yyyy.MM.dd.", d.getTime());
+            Log.d("666aaa", s.toString() /*+ "  --- "+String.valueOf(d.getYear() + 1900) + "." + String.valueOf(d.getMonth()) + "." + String.valueOf(d.getDay()) + "."*/);
 
 
 /*
@@ -41,7 +47,7 @@ public class GuitarTutorMain extends AppCompatActivity {
 
 
 
-             // dbh.UPDATE_DB_toDelete(); // delete this line
+            //  dbh.UPDATE_DB_toDelete(); // delete this line
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -67,7 +73,7 @@ public class GuitarTutorMain extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         new AlertDialog.Builder(this)
-                .setMessage("Kilép az alkalmazásból?")
+                .setMessage("Elhagyod a Gitár Oktatót?")
                 .setCancelable(false)
                 .setPositiveButton("Igen", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {

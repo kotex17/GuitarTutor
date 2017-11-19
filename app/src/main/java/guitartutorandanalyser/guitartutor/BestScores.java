@@ -1,14 +1,11 @@
 package guitartutorandanalyser.guitartutor;
 
-import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.ArrayMap;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -66,31 +63,12 @@ public class BestScores extends AppCompatActivity {
 
         Log.d("cursor count", String.valueOf(cursor.getCount()));
 
-       /* String[] items = new String[cursor.getCount()];
-        int i = 0;*/
-
-
         while (cursor.moveToNext()) {
             listHomeworks.add(new String[]{String.valueOf(cursor.getInt(0)), cursor.getString(1), String.valueOf(cursor.getInt(2)), cursor.getString(3), String.valueOf(cursor.getInt(4))});
-           /* items[i] = cursor.getString(1) + " \t\t\t " + String.valueOf(cursor.getInt(2)) + " \t\t\t " + cursor.getString(3) + " \t\t\t " + String.valueOf(cursor.getInt(4));
-            i++;*/
+
         }
 
         fillTable(listHomeworks);
-
-/*
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                this,                   //context
-                R.layout.list_songs,    //layout
-                items               //items
-        );
-
-        listView.setAdapter(adapter);
-
-        dbh.close();
-        cursor.close();*/
-
 
     }
 
@@ -177,10 +155,7 @@ public class BestScores extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
 
-               /* Intent tutorIntent = new Intent("guitartutorandanalyser.guitartutor.AnalyseResult");
-                tutorIntent.putExtra("homeWorkId",idToSongName.keyAt(position));
-                startActivity(tutorIntent);
-*/
+
             }
         });
     }
