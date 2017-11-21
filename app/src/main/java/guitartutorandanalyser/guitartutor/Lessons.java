@@ -174,7 +174,7 @@ public class Lessons extends AppCompatActivity {
 
         ArrayMap<Integer, Integer> avaibleConditionMap = new ArrayMap<>();
         avaibleConditionMap.put(2, 4); //minor expert, condition: minor beginner
-        avaibleConditionMap.put(4, 1); // minor beg, condtion: chromatic scale
+     //   avaibleConditionMap.put(4, 1); // minor beg, condtion: chromatic scale
 
         return avaibleConditionMap;
     }

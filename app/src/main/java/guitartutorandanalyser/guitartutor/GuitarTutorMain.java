@@ -7,12 +7,7 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.View;
-
-import java.util.Date;
-
 
 public class GuitarTutorMain extends AppCompatActivity {
 
@@ -25,11 +20,6 @@ public class GuitarTutorMain extends AppCompatActivity {
         try {
             DatabaseHelper dbh = new DatabaseHelper(this);
             dbh.createDataBase();
-
-            Date d = new Date();
-            CharSequence s = DateFormat.format("yyyy.MM.dd.", d.getTime());
-            Log.d("666aaa", s.toString() /*+ "  --- "+String.valueOf(d.getYear() + 1900) + "." + String.valueOf(d.getMonth()) + "." + String.valueOf(d.getDay()) + "."*/);
-
 
 /*
             Log.d("c sound id", String.valueOf( this.getResources().getIdentifier("lesson_beg_chromatic_scale_a_90", "raw", this.getPackageName())));

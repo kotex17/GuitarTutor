@@ -111,7 +111,7 @@ public class Tutor extends AppCompatActivity {
 
     public void onButtonPlayClick(View v) {
 
-        if (!isSoundPlaying && !isRecordPlaying && !isRecording) {
+        if (!isSoundPlaying && !isRecordPlaying && !isRecording && !isPracticingMetronme) {
             startSoundPlay();
             playStopButton.setText("Stop");
 
@@ -138,8 +138,14 @@ public class Tutor extends AppCompatActivity {
             stopRecording();
         } else if (!isSoundPlaying && !isRecordPlaying && !isPracticingMetronme) {
 
-            recStopButton.setText("Stop rec");
-            startRecording();
+            if (isExternalStorageWritable()) {
+
+                recStopButton.setText("Stop rec");
+                startRecording();
+            } else {
+
+                Toast.makeText(this, "Nem található külső memóra a hangrögzítéshez", Toast.LENGTH_LONG).show();
+            }
         }
 
     }
@@ -309,7 +315,7 @@ public class Tutor extends AppCompatActivity {
 
             public void run() {
 
-                for (int i = 0; i < homework.getBeats() ; i++) {
+                for (int i = 0; i < homework.getBeats(); i++) {
 
                     final int counter = i;
                     handler.post(new Runnable() {
@@ -374,6 +380,14 @@ public class Tutor extends AppCompatActivity {
         soundAnalyser.analyseRecord();
 
         progressBar.setVisibility(View.VISIBLE);
+    }
+
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
     }
 
     class Tick {

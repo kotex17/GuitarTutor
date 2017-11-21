@@ -3,7 +3,6 @@ package guitartutorandanalyser.guitartutor;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
@@ -22,10 +21,10 @@ public class SoundAnalyser {
     HomeWork currentHomeWork;
     String recordedAudioMap;
     Context context;
+
     final int BUFFER_SIZE = 2048;
     final int SAMPLE_RATE;
     final String PATH_NAME;
-
 
     public SoundAnalyser(HomeWork homework, Context context, int SAMPLE_RATE, String PATH_NAME) {
         this.currentHomeWork = homework;
@@ -33,7 +32,6 @@ public class SoundAnalyser {
         this.SAMPLE_RATE = SAMPLE_RATE;
         this.PATH_NAME = PATH_NAME;
     }
-
 
     public void analyseRecord() {
 
@@ -46,19 +44,17 @@ public class SoundAnalyser {
         // audiofactory(from pipe, wav header is ignored, pcm samples captured) ---> audiodispathcer(plays a file and sends float arrays to registered AudioProcessor )
         // AudioProcessor = PitchProcessor, PitchdetectionHandler = Interface( handlePitch())
 
-
         dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, SAMPLE_RATE, BUFFER_SIZE, new PitchDetectionHandler() {
 
             @Override
             public void handlePitch(PitchDetectionResult pitchDetectionResult,
                                     AudioEvent audioEvent) {
-                final float pitchInHz = roundFloat2Decimal( pitchDetectionResult.getPitch()) ;
+                final float pitchInHz = roundFloat2Decimal(pitchDetectionResult.getPitch());
 
-                Log.d("pitc AAA", String.valueOf(pitchInHz));
                 // store in string, float[] array length is not known at this point
                 try {
-                    recordedAudioMap += String.valueOf(pitchInHz) + ';';
 
+                    recordedAudioMap += String.valueOf(pitchInHz) + ';';
                 } catch (Exception e) {
 
                 }
@@ -70,13 +66,9 @@ public class SoundAnalyser {
         audioDispathcerThread.start();
 
         compareResult(audioDispathcerThread);
-
     }
 
     private float roundFloat2Decimal(float number) {
-
-       // BigDecimal bd = new BigDecimal(number, new MathContext(4))).floatValue();
-
 
         BigDecimal bd = new BigDecimal(number);
         bd = bd.setScale(2, RoundingMode.HALF_UP);
@@ -97,13 +89,7 @@ public class SoundAnalyser {
                     float[] intPitchMapHomeWork = getFloatPitchMap(currentHomeWork.getMap());
                     float[] intPitchMapRecord = getFloatPitchMap(recordedAudioMap);
 
-                    Log.d("maps hw: ", currentHomeWork.getMap());
-                    Log.d("maps re: ", recordedAudioMap);
-                    Log.d("hosszak: ", intPitchMapHomeWork.length + "  -  " + intPitchMapRecord.length);
-
                     int result = compareIntPitchMaps(intPitchMapHomeWork, intPitchMapRecord);
-
-                    Log.d("eredmeny: ", String.valueOf(result) + "%");
 
                     startAnalyseResultActivity(result);
 
@@ -114,8 +100,8 @@ public class SoundAnalyser {
                 }
             }
         }, "Compare Thread");
-        compareThread.start();
 
+        compareThread.start();
     }
 
     private float[] getFloatPitchMap(String map) throws Exception {
@@ -132,6 +118,7 @@ public class SoundAnalyser {
             char c = map.charAt(i);
 
             if (c != ';') {
+
                 onePitch += c;
             } else {
 
@@ -157,12 +144,10 @@ public class SoundAnalyser {
             int recordedIndex;
             int homeworkIndex;
 
-
             for (int j = 0; j < 22; j++) { //44100 / 2048 = 21,5, so up to 1 sec the app corrigate the recorded map ( 22 samples)
 
                 correct = 0;
                 missed = 0;
-
 
                 if (runTwice == 0) { // first run shift one way
                     recordedIndex = 0;
@@ -222,9 +207,6 @@ public class SoundAnalyser {
                         firstMinusOneError = true;
                     }
 
-
-                    //   Log.d("na mit jelez: " + String.valueOf(j), "  hi " + String.valueOf(homework[homeworkIndex]) + "  ri " + String.valueOf(recorded[recordedIndex]) +"  b "+String.valueOf(bigger)+"  s "+String.valueOf(smaller)+"   c " + String.valueOf(correct) + "  m " + String.valueOf(missed));
-
                     homeworkIndex++;
                     recordedIndex++;
                 }
@@ -233,7 +215,6 @@ public class SoundAnalyser {
 
                 if (tempResult > bestResult) {
                     bestResult = tempResult;
-                    Log.d("best match", String.valueOf(j) + "   rt" + String.valueOf(runTwice) + "  c: " + String.valueOf(correct) + "  m:" + String.valueOf(missed));
                 }
 
             }
@@ -248,7 +229,6 @@ public class SoundAnalyser {
         analyseResultIntent.putExtra("result", String.valueOf(result));
         analyseResultIntent.putExtra("homeworkId", String.valueOf(currentHomeWork.get_id()));
         context.startActivity(analyseResultIntent);
-
     }
 
 }

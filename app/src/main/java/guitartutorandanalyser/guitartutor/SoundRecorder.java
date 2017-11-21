@@ -166,7 +166,4 @@ public class SoundRecorder {
         updateWavHeader();
     }
 
-   /* public boolean isSoundRecording() {
-        return isSoundRecording;
-    }*/
 }
