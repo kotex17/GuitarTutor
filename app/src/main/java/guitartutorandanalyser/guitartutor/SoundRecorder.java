@@ -1,9 +1,17 @@
 package guitartutorandanalyser.guitartutor;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.pm.ActivityInfoCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 
@@ -22,11 +30,19 @@ public class SoundRecorder {
             AudioFormat.CHANNEL_IN_MONO,
             AudioFormat.ENCODING_PCM_16BIT) / 2;
 
-    AudioRecord recorder;
-    private boolean isSoundRecording;
+    boolean isSoundRecording;
     int recSizeInByte;
+    AudioRecord recorder;
+
+    Activity currentActivity;
+/*
+    public SoundRecorder(Activity calledBy) {
+        currentActivity = calledBy;
+
+    }*/
 
     public Thread startRecording() { // creates new audio recorder instance, start it, new recording thread
+
 
         recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
                 SAMPLE_RATE,
@@ -42,6 +58,7 @@ public class SoundRecorder {
 
         recorder.startRecording(); // start capturing samples from mic, but do nothing with them( not writing into file)
         isSoundRecording = true;
+
 
         return recordAudioThread;
     }
@@ -165,5 +182,7 @@ public class SoundRecorder {
 
         updateWavHeader();
     }
+
+
 
 }

@@ -6,20 +6,123 @@
     android:layout_height="match_parent"
     tools:context="guitartutorandanalyser.guitartutor.UserGuide">
 
+
     <TextView
-        android:id="@+id/textView"
-        android:layout_width="330dp"
-        android:layout_height="309dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Valami jó kis okkoság erről a szép alkalmazásról"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/userGuide_Lessons_TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Button"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/userGuide_Game_TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:text="Játékmenet"
+        android:textAppearance="@style/TextAppearance.AppCompat.Button"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/userGuide_Lessons_TextView" />
+
+    <TextView
+        android:id="@+id/userGuide_Analyse_TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:text="Analizálás"
+        android:textAppearance="@style/TextAppearance.AppCompat.Button"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/userGuide_Game_TextView" />
+
+    <TextView
+        android:id="@+id/userGuide_Records_TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:text="Rekordok"
+        android:textAppearance="@style/TextAppearance.AppCompat.Button"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/userGuide_Analyse_TextView" />
+
+    <Button
+        android:id="@+id/userGuide_back_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginStart="24dp"
+        android:onClick="backToStartMenu"
+        android:text="Vissza"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <ScrollView
+
+        android:id="@+id/userGuide_scrollView"
+        android:layout_width="0dp"
+
+        android:layout_height="0dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/userGuide_Lessons_TextView"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteY="24dp"
-        app:layout_constraintHorizontal_bias="0.501"
-        app:layout_constraintVertical_bias="0.513" />
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp">
+
+        <TextView
+            android:id="@+id/userGuide_Help_textView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+
+            android:scrollbars="vertical"
+            android:text="Üdvözöllek a Gitár Oktató alkalmazásban! \n\n A Gitár Oktató egy egyszerű, gitárjátékot fejlesztő és ellenörző program. Választhatsz különböző dalokat és leckéket megtanulásra. A gyakorlás után tudásodat ellenőrizni is tudod az analizáló funkció segítségével. A játékban új leckék nyílnak meg ha elég ügyes vagy. Gitározásra fel!
+\n\nTANANYAG VÁLASZTÁSA \n
+Két féle tananyag közül tudsz választani. A “Dalok” gombra bökve ismert dalokat gyakorolhatsz, válaszd ki a neked szimpatikus nótát a listából! A “Leckék” közt kezdő és haladó szintű ismereteket tanulhatsz meg. Kezd a könnyebbekkel és figyeld, ahogy új szintek nyílnak meg előtted.
+
+\n\nJÁTÉKMENET \n
+Válassz egy leckét vagy dalt és máris a játékban találod magad. A “Meghallgatom” feliratra bökj, ha szeretnéd meghallgatni az aktuális tabulatúra helyes gitározását. Gyakorold a tabulatúrát, hogy te is teljesíteni tudd a feladatot!
+A “Cick” indítása után tudod ritmikailag pontosan, metronómra gyakorolni a gitárjátékod. Próbáld minél pontosabban eljátszani a tabulatúrát, hiszen a végén annál több pontot szerezhetsz.
+A Rec gombbal fel tudod venni saját gitározásod! Ügyelj, hogy ne legyen túl erős a háttérzaj és pontosan játszd el a darabot! A megfelelő tempót a felvétel elindítása előtt történő beszámolás segíti számodra. Ha elrontod a felvétel közben a gitározásod állítsd le a felvételt és próbáld újra. Ha felveszel, akkor játszd végig a tabulatúrát, hogy ellenőrizni tudd a játékod! A hangfelvétel automatikusan leáll, amikor a dal végére érsz.
+\n\nANALIZÁLÁS \n
+Ellenőrizd a felvett gitárjátékod! Miután végig játszottad a tabulatúra hangjait és leállt a felvétel, bökj az Analizálás feliratra. Új képernyőre fogsz jutni, ahol 0-100 közt pontozzuk a gitározásod. Ha legalább 70 pontot elértél, akkor a leckét, vagy dalt sikerrel teljesítetted. Alacsonyabb pont esetén próbálkozz, amég nem megy tökéletesen :) Ha új csúcsot döntöttél, akkor gratulálunk, pontszámod bekerül a rekordok könyvébe!
+\n\nREKORDOK \n
+Itt vissza tudod nézni, hogy melyik tananyaghoz milyen pontokat értél el. Egy átfogó statisztikát kapsz az elérhető leckékről és dalokról. Gyűjtsd ki az összes játékot és teljesítsd a tananyagokat! Jó gyakorlást kívánunk!
+"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/userGuide_Lessons_TextView"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
+
+    </ScrollView>
+
+
 </android.support.constraint.ConstraintLayout>

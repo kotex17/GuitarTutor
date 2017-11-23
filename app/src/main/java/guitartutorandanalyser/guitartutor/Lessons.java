@@ -1,7 +1,6 @@
 package guitartutorandanalyser.guitartutor;
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
@@ -20,13 +19,16 @@ public class Lessons extends AppCompatActivity {
     ListView listViewBeginner;
     ListView listViewExpert;
 
-    ArrayMap<String, String> idToLessonName_beg = new ArrayMap<String, String>(); // list of beginner lessons, maped to their database ID
-    ArrayMap<String, String> idToLessonName_exp = new ArrayMap<String, String>(); // list of expert lessons, maped to their database ID
+    ArrayMap<Integer, String> positionToId_beg = new  ArrayMap<Integer, String>(); // list of beginner lessons, maped to their database ID
+    ArrayMap<Integer, String> positionToId_exp = new  ArrayMap<Integer, String>(); // list of expert lessons, maped to their database ID
 
     ArrayMap<String, Boolean> idIsLearnable;
 
+    int sortingPosition;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lessons);
 
@@ -36,27 +38,40 @@ public class Lessons extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+
         super.onResume();
 
         idIsLearnable = getLearnableHomeworkMap();
-        idToLessonName_beg = populateListView(listViewBeginner, "lesson_beg");
-        idToLessonName_exp = populateListView(listViewExpert, "lesson_exp");
+        positionToId_beg = populateListView(listViewBeginner, "lesson_beg");
+        positionToId_exp = populateListView(listViewExpert, "lesson_exp");
 
         onListItemClick();
     }
 
-    private ArrayMap<String, String> populateListView(ListView listView, String type) {
+    private ArrayMap<Integer, String> populateListView(ListView listView, String type) {
 
-        ArrayMap<String, String> idToLessonName = fetchDatabase(type);
-
-        final int sortingPosition = sortMapByAvailability(idToLessonName);
+        ArrayMap<String, String> idToLessonName = sortMapByAvailability(fetchDatabase(type));
+        ArrayMap<Integer, String> positionToId = new ArrayMap<>();
 
         String[] items = new String[idToLessonName.keySet().size()];
-        int i = 0;
+        int itemIndex = 0;
+
+        for (int i = idToLessonName.size() - 1; i >= 0; i--) {
+
+            Log.d(" BBB 1 ", idToLessonName.keyAt(i) + " b " + idToLessonName.get(idToLessonName.keyAt(i)));
+            items[itemIndex] = idToLessonName.get(idToLessonName.keyAt(i));
+
+            positionToId.put(itemIndex, idToLessonName.keyAt(i));
+
+            itemIndex++;
+        }
+
+       /* int i = 0;
         for (String item : idToLessonName.values()) {
             items[i] = item;
             i++;
-        }
+        }*/
+        final int sortingSeparator = sortingPosition;
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(
                 this,                   //context
@@ -70,7 +85,7 @@ public class Lessons extends AppCompatActivity {
                 View view = super.getView(position, convertView, parent);
                 TextView textItem = (TextView) view;
 
-                if (position > sortingPosition)
+                if (position > sortingSeparator)
                     textItem.setTextColor(Color.rgb(232, 62, 62));
                 else
                     textItem.setTextColor(Color.LTGRAY);
@@ -81,33 +96,52 @@ public class Lessons extends AppCompatActivity {
 
         listView.setAdapter(adapter);
 
-        return idToLessonName;
+
+        return positionToId;
     }
 
     // separates list items(at this point a map), available to learn first, not avalable ones last
-    private int sortMapByAvailability(ArrayMap<String, String> idToLessonName) {
+    private ArrayMap<String, String> sortMapByAvailability(ArrayMap<String, String> idToLessonName) {
 
         ArrayMap<String, String> sortedMap = new ArrayMap<>();
 
-        int sortingPosition = -1;
+        this.sortingPosition = -1;
 
         for (String key : idToLessonName.keySet()) {
 
             if (idIsLearnable.get(key)) {
                 sortedMap.put(key, idToLessonName.get(key));
+                Log.d("put1 ", key + " x " + idToLessonName.get(key));
                 sortingPosition++;
             }
         }
 
         for (String key : idToLessonName.keySet()) {
 
-            if (!idIsLearnable.get(key))
+            if (!idIsLearnable.get(key)) {
                 sortedMap.put(key, idToLessonName.get(key));
+
+                Log.d("put2 ", key + " x " + idToLessonName.get(key));
+            }
         }
 
-        idToLessonName = sortedMap;
+        return sortedMap;
 
-        return sortingPosition;
+      /*  for ( String key : sortedMap.keySet()  ){
+            Log.d("AAAA", sortedMap.get(key));
+
+        }
+        for ( String key : sortedMap.values()  ){
+            Log.d("AAAA222", key);
+
+        }
+        for(int i = sortedMap.size()-1; i>=0; i--  ){
+            Log.d("AAAA333", sortedMap.keyAt(i) +" xx "+ sortedMap.get(sortedMap.keyAt(i)));
+
+        }
+        Log.d("AAA", String.valueOf(sortingPosition));*/
+
+        // return sortingPosition;
 
     }
 
@@ -148,11 +182,17 @@ public class Lessons extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
 
-                if (idIsLearnable.get(idToLessonName_beg.keyAt(position))) {
+
+                if (idIsLearnable.get(positionToId_beg.get(position))) {
                     Intent tutorIntent = new Intent("guitartutorandanalyser.guitartutor.Tutor");
-                    tutorIntent.putExtra("homeWorkId", idToLessonName_beg.keyAt(position));
+                    tutorIntent.putExtra("homeWorkId", positionToId_beg.get(position));
                     startActivity(tutorIntent);
                 }
+             /*   if (idIsLearnable.get(positionToId_beg.keyAt(position))) {
+                    Intent tutorIntent = new Intent("guitartutorandanalyser.guitartutor.Tutor");
+                    tutorIntent.putExtra("homeWorkId", positionToId_beg.keyAt(position));
+                    startActivity(tutorIntent);
+                }*/
             }
         });
 
@@ -160,9 +200,9 @@ public class Lessons extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
 
-                if (idIsLearnable.get(idToLessonName_exp.keyAt(position))) {
+                if (idIsLearnable.get(positionToId_exp.get(position))) {
                     Intent tutorIntent = new Intent("guitartutorandanalyser.guitartutor.Tutor");
-                    tutorIntent.putExtra("homeWorkId", idToLessonName_exp.keyAt(position));
+                    tutorIntent.putExtra("homeWorkId", positionToId_exp.get(position));
                     startActivity(tutorIntent);
                 }
             }
@@ -174,7 +214,7 @@ public class Lessons extends AppCompatActivity {
 
         ArrayMap<Integer, Integer> avaibleConditionMap = new ArrayMap<>();
         avaibleConditionMap.put(2, 4); //minor expert, condition: minor beginner
-     //   avaibleConditionMap.put(4, 1); // minor beg, condtion: chromatic scale
+        avaibleConditionMap.put(6, 5); // blues, condtion: pentaton scale
 
         return avaibleConditionMap;
     }

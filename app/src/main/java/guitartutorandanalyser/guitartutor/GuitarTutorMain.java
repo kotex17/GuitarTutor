@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 public class GuitarTutorMain extends AppCompatActivity {
@@ -32,6 +33,12 @@ public class GuitarTutorMain extends AppCompatActivity {
             Log.d("m1 tab id", String.valueOf( this.getResources().getIdentifier("tab_minor_scale_g_60", "drawable", this.getPackageName())));
             Log.d("m2 sound id", String.valueOf( this.getResources().getIdentifier("lesson_exp_minor_scale_g_90", "raw", this.getPackageName())));
             Log.d("m2 tab id", String.valueOf( this.getResources().getIdentifier("tab_minor_scale_g_90", "drawable", this.getPackageName())));
+
+
+            Log.d("p sound id", String.valueOf( this.getResources().getIdentifier("lesson_beg_pentaton_scale_f_75", "raw", this.getPackageName())));
+            Log.d("p tab id", String.valueOf( this.getResources().getIdentifier("tab_pentaton_scale_f_75", "drawable", this.getPackageName())));
+            Log.d("b sound id", String.valueOf( this.getResources().getIdentifier("lesson_exp_blues_scale_f_75", "raw", this.getPackageName())));
+            Log.d("b tab id", String.valueOf( this.getResources().getIdentifier("tab_blues_scale_f_75", "drawable", this.getPackageName())));
 
 */
 
