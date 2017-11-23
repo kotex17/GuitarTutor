@@ -27,6 +27,7 @@ public class SoundAnalyser {
     final String PATH_NAME;
 
     public SoundAnalyser(HomeWork homework, Context context, int SAMPLE_RATE, String PATH_NAME) {
+
         this.currentHomeWork = homework;
         this.context = context;
         this.SAMPLE_RATE = SAMPLE_RATE;
@@ -169,7 +170,6 @@ public class SoundAnalyser {
                         bigger = homework[homeworkIndex];
                         smaller = recorded[recordedIndex];
                     }
-
 
                     if (bigger == smaller) {
 

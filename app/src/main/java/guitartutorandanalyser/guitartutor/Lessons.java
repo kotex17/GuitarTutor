@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.ArrayMap;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -51,26 +50,19 @@ public class Lessons extends AppCompatActivity {
     private ArrayMap<Integer, String> populateListView(ListView listView, String type) {
 
         ArrayMap<String, String> idToLessonName = sortMapByAvailability(fetchDatabase(type));
-        ArrayMap<Integer, String> positionToId = new ArrayMap<>();
 
+
+        ArrayMap<Integer, String> positionToId = new ArrayMap<>();
         String[] items = new String[idToLessonName.keySet().size()];
         int itemIndex = 0;
 
         for (int i = idToLessonName.size() - 1; i >= 0; i--) {
 
-            Log.d(" BBB 1 ", idToLessonName.keyAt(i) + " b " + idToLessonName.get(idToLessonName.keyAt(i)));
             items[itemIndex] = idToLessonName.get(idToLessonName.keyAt(i));
-
             positionToId.put(itemIndex, idToLessonName.keyAt(i));
-
             itemIndex++;
         }
 
-       /* int i = 0;
-        for (String item : idToLessonName.values()) {
-            items[i] = item;
-            i++;
-        }*/
         final int sortingSeparator = sortingPosition;
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(
@@ -96,7 +88,6 @@ public class Lessons extends AppCompatActivity {
 
         listView.setAdapter(adapter);
 
-
         return positionToId;
     }
 
@@ -105,44 +96,24 @@ public class Lessons extends AppCompatActivity {
 
         ArrayMap<String, String> sortedMap = new ArrayMap<>();
 
-        this.sortingPosition = -1;
+        sortingPosition = -1;
 
         for (String key : idToLessonName.keySet()) {
 
             if (idIsLearnable.get(key)) {
+
                 sortedMap.put(key, idToLessonName.get(key));
-                Log.d("put1 ", key + " x " + idToLessonName.get(key));
                 sortingPosition++;
             }
         }
 
         for (String key : idToLessonName.keySet()) {
 
-            if (!idIsLearnable.get(key)) {
+            if (!idIsLearnable.get(key))
                 sortedMap.put(key, idToLessonName.get(key));
-
-                Log.d("put2 ", key + " x " + idToLessonName.get(key));
-            }
         }
 
         return sortedMap;
-
-      /*  for ( String key : sortedMap.keySet()  ){
-            Log.d("AAAA", sortedMap.get(key));
-
-        }
-        for ( String key : sortedMap.values()  ){
-            Log.d("AAAA222", key);
-
-        }
-        for(int i = sortedMap.size()-1; i>=0; i--  ){
-            Log.d("AAAA333", sortedMap.keyAt(i) +" xx "+ sortedMap.get(sortedMap.keyAt(i)));
-
-        }
-        Log.d("AAA", String.valueOf(sortingPosition));*/
-
-        // return sortingPosition;
-
     }
 
 
@@ -182,17 +153,11 @@ public class Lessons extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
 
-
                 if (idIsLearnable.get(positionToId_beg.get(position))) {
                     Intent tutorIntent = new Intent("guitartutorandanalyser.guitartutor.Tutor");
                     tutorIntent.putExtra("homeWorkId", positionToId_beg.get(position));
                     startActivity(tutorIntent);
                 }
-             /*   if (idIsLearnable.get(positionToId_beg.keyAt(position))) {
-                    Intent tutorIntent = new Intent("guitartutorandanalyser.guitartutor.Tutor");
-                    tutorIntent.putExtra("homeWorkId", positionToId_beg.keyAt(position));
-                    startActivity(tutorIntent);
-                }*/
             }
         });
 
@@ -209,7 +174,7 @@ public class Lessons extends AppCompatActivity {
         });
     }
 
-
+    // describes which lesson must be completed to play specific lessons
     private ArrayMap<Integer, Integer> avaibleConditionMap() {
 
         ArrayMap<Integer, Integer> avaibleConditionMap = new ArrayMap<>();
@@ -219,6 +184,7 @@ public class Lessons extends AppCompatActivity {
         return avaibleConditionMap;
     }
 
+    // describes which lessons can be played by user,  based on already completed lessons
     private ArrayMap<String, Boolean> getLearnableHomeworkMap() {
 
         DatabaseHelper db = new DatabaseHelper(this);

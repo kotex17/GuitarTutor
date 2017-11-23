@@ -3,10 +3,7 @@ package guitartutorandanalyser.guitartutor;
 import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
+
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -16,43 +13,38 @@ import java.util.ArrayList;
 
 public class BestScores extends AppCompatActivity {
 
-    private ListView listView;
     private DatabaseHelper dbh;
-
     private TableLayout tableLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_best_scores);
 
         dbh = new DatabaseHelper(this);
 
-        listView = (ListView) findViewById(R.id.bestScoresListView);
-
         tableLayout = (TableLayout) findViewById(R.id.table_layout);
-
     }
 
     @Override
     protected void onResume() {
+
         super.onResume();
 
         populateListView();
-
-        onListItemClick();
     }
 
     private void populateListView() {
 
         ArrayList<String[]> listHomeworks = new ArrayList<>();
 
-
         try {
             dbh.openDataBase();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         Cursor cursor = dbh.myDataBase.query(DatabaseHelper.TABLE_HOMEWORKS,
                 new String[]{DatabaseHelper.Column.ID,
                         DatabaseHelper.Column.NAME,
@@ -61,19 +53,15 @@ public class BestScores extends AppCompatActivity {
                         DatabaseHelper.Column.COMPLETED,},
                 null, null, null, null, DatabaseHelper.Column.NAME);
 
-        Log.d("cursor count", String.valueOf(cursor.getCount()));
-
         while (cursor.moveToNext()) {
-            listHomeworks.add(new String[]{String.valueOf(cursor.getInt(0)), cursor.getString(1), String.valueOf(cursor.getInt(2)), cursor.getString(3), String.valueOf(cursor.getInt(4))});
 
+            listHomeworks.add(new String[]{String.valueOf(cursor.getInt(0)), cursor.getString(1), String.valueOf(cursor.getInt(2)), cursor.getString(3), String.valueOf(cursor.getInt(4))});
         }
 
         fillTable(listHomeworks);
-
     }
 
     public void fillTable(ArrayList<String[]> listHomeworks) {
-
 
         //Header
 
@@ -143,20 +131,8 @@ public class BestScores extends AppCompatActivity {
             tv.setTextSize(12);
             tr.addView(tv);
 
-
-
-        tableLayout.addView(tr);
+            tableLayout.addView(tr);
+        }
     }
 
-}
-
-    private void onListItemClick() {
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
-
-
-            }
-        });
-    }
 }

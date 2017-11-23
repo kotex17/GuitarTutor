@@ -34,8 +34,8 @@ public class SoundRecorder {
     int recSizeInByte;
     AudioRecord recorder;
 
-    Activity currentActivity;
-/*
+ /*   Activity currentActivity;
+
     public SoundRecorder(Activity calledBy) {
         currentActivity = calledBy;
 
@@ -166,8 +166,6 @@ public class SoundRecorder {
         } catch (IOException e) {
 
         }
-
-
     }
 
     public void stopRecording() {
@@ -182,7 +180,6 @@ public class SoundRecorder {
 
         updateWavHeader();
     }
-
 
 
 }

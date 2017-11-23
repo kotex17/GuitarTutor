@@ -39,10 +39,7 @@ public class GuitarTutorMain extends AppCompatActivity {
             Log.d("p tab id", String.valueOf( this.getResources().getIdentifier("tab_pentaton_scale_f_75", "drawable", this.getPackageName())));
             Log.d("b sound id", String.valueOf( this.getResources().getIdentifier("lesson_exp_blues_scale_f_75", "raw", this.getPackageName())));
             Log.d("b tab id", String.valueOf( this.getResources().getIdentifier("tab_blues_scale_f_75", "drawable", this.getPackageName())));
-
 */
-
-
 
             //  dbh.UPDATE_DB_toDelete(); // delete this line
 
@@ -52,18 +49,22 @@ public class GuitarTutorMain extends AppCompatActivity {
     }
 
     public void onButtonSongsClick(View v) {
+
         startActivity(new Intent("guitartutorandanalyser.guitartutor.Songs"));
     }
 
     public void onButtonLessonsClick(View v) {
+
         startActivity(new Intent("guitartutorandanalyser.guitartutor.Lessons"));
     }
 
     public void onButtonRecordsClick(View v) {
+
         startActivity(new Intent("guitartutorandanalyser.guitartutor.BestScores"));
     }
 
     public void onButtonHelpClick(View v) {
+
         startActivity(new Intent("guitartutorandanalyser.guitartutor.UserGuide"));
     }
 

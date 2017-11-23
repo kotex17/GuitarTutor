@@ -33,7 +33,7 @@ public class Tutor extends AppCompatActivity {
 
     final int SAMPLE_RATE = 44100;
     final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";
- //   final int PERMISSIONS_MULTIPLE_REQUEST = 123;
+    //   final int PERMISSIONS_MULTIPLE_REQUEST = 123;
 
     boolean isSoundPlaying, isRecording, isRecordPlaying, isPracticingMetronme, analyseEnabled, reachedEndOfRecordTime;
 
@@ -74,7 +74,7 @@ public class Tutor extends AppCompatActivity {
         ((ImageView) findViewById(R.id.imageView_tab)).setImageResource(homework.getTabId());
         ((TextView) findViewById(R.id.textView_title)).setText(homework.getName());
 
-       // RequestPermisson();
+        // RequestPermisson();
 
         File file = new File(PATH_NAME);
         if (file.exists())
@@ -462,28 +462,28 @@ public class Tutor extends AppCompatActivity {
         }
     }*/
 
-/*
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String[] permissions, int[] grantResults) {
+    /*
+        @Override
+        public void onRequestPermissionsResult(int requestCode,
+                                               String[] permissions, int[] grantResults) {
 
-        switch (requestCode) {
-            case PERMISSIONS_MULTIPLE_REQUEST:
-                if (grantResults.length > 0) {
-                    boolean conditoon = grantResults[2] == PackageManager.PERMISSION_GRANTED;
-                    boolean cameraPermission = grantResults[1] == PackageManager.PERMISSION_GRANTED;
-                    boolean readExternalFile = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            switch (requestCode) {
+                case PERMISSIONS_MULTIPLE_REQUEST:
+                    if (grantResults.length > 0) {
+                        boolean conditoon = grantResults[2] == PackageManager.PERMISSION_GRANTED;
+                        boolean cameraPermission = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                        boolean readExternalFile = grantResults[0] == PackageManager.PERMISSION_GRANTED;
 
-                    if (cameraPermission && readExternalFile && conditoon) {
-                        // write your logic here
-                    } else {
-                        RequestPermisson();
+                        if (cameraPermission && readExternalFile && conditoon) {
+                            // write your logic here
+                        } else {
+                            RequestPermisson();
+                        }
                     }
-                }
-                break;
+                    break;
+            }
         }
-    }
-*/
+    */
     class Tick {
 
         float tick; //tempo means beats per minute, calculate milliseconds between ticks

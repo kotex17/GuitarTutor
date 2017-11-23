@@ -122,17 +122,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public boolean updateDatabaseRecord(HomeWork homework) {
 
         ContentValues contentValues = new ContentValues();
-   //     contentValues.put(Column.ID, homework.get_id());
-   //     contentValues.put(Column.TYPE, homework.getType());
-  //      contentValues.put(Column.NAME,  homework.getName());
-  //      contentValues.put(Column.BPM,  homework.getBpm());
-  //      contentValues.put(Column.BEATS,  homework.getBeats());
         contentValues.put(Column.RECORDPOINT,  homework.getRecordpoint());
         contentValues.put(Column.RECORDDATE,  homework.getRecordDate());
         contentValues.put(Column.COMPLETED,  homework.getCompleted());
-  //      contentValues.put(Column.MAP,  homework.getMap());
-  //      contentValues.put(Column.TABID,  homework.getTabId());
-  //      contentValues.put(Column.SONGID,  homework.getSoundId());
 
         try {
             this.openDataBase();

@@ -2,22 +2,14 @@ package guitartutorandanalyser.guitartutor;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.ArrayMap;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 public class Songs extends AppCompatActivity {
 
@@ -26,6 +18,7 @@ public class Songs extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_songs);
 
@@ -94,7 +87,6 @@ public class Songs extends AppCompatActivity {
                 Intent tutorIntent = new Intent("guitartutorandanalyser.guitartutor.Tutor");
                 tutorIntent.putExtra("homeWorkId", idToSongName.keyAt(position));
                 startActivity(tutorIntent);
-
             }
         });
     }

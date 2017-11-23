@@ -44,19 +44,17 @@ public class AnalyseResult extends AppCompatActivity {
 
         progressbar = (ProgressBar) findViewById(R.id.progressBarResult);
 
-
         Thread progress = showProgress(Integer.parseInt(result));
         progress.start();
-
     }
 
     private Thread showProgress(final int result) {
 
         final Handler handler = new Handler();
+
         return new Thread(new Runnable() {
             @Override
             public void run() {
-
 
                 handler.post(new Runnable() {
                     @Override
@@ -100,7 +98,7 @@ public class AnalyseResult extends AppCompatActivity {
 
                 if (result < 50) {
 
-                    feedback ="Próbáld újra! Gyakorlás teszi a mestert, ne add fel!";
+                    feedback = "Próbáld újra! Gyakorlás teszi a mestert, ne add fel!";
 
                 } else if (result >= 50 && result < 70) {
 
@@ -147,7 +145,6 @@ public class AnalyseResult extends AppCompatActivity {
                 updateHomeWork(result);
             }
         });
-
     }
 
     private void updateHomeWork(int result) {
@@ -180,7 +177,6 @@ public class AnalyseResult extends AppCompatActivity {
                 }
             }).start();
         }
-
     }
 
     public void backToStartMenu(View v) {

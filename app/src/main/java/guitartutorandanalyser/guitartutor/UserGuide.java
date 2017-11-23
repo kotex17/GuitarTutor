@@ -1,7 +1,6 @@
 package guitartutorandanalyser.guitartutor;
 
 import android.content.Intent;
-import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -17,9 +16,9 @@ public class UserGuide extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_guide);
-
 
         record = (TextView) findViewById(R.id.userGuide_Records_TextView);
         game = (TextView) findViewById(R.id.userGuide_Game_TextView);
@@ -31,7 +30,6 @@ public class UserGuide extends AppCompatActivity {
         help = (TextView) findViewById(R.id.userGuide_Help_textView);
 
         onTouch();
-
     }
 
 
@@ -69,7 +67,6 @@ public class UserGuide extends AppCompatActivity {
                 return true;
             }
         });
-
     }
 
     public void backToStartMenu(View v) {
