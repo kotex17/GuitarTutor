@@ -34,12 +34,6 @@ public class SoundRecorder {
     int recSizeInByte;
     AudioRecord recorder;
 
- /*   Activity currentActivity;
-
-    public SoundRecorder(Activity calledBy) {
-        currentActivity = calledBy;
-
-    }*/
 
     public Thread startRecording() { // creates new audio recorder instance, start it, new recording thread
 

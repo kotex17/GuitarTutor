@@ -13,12 +13,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -27,15 +29,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 
 
 public class Tutor extends AppCompatActivity {
 
     final int SAMPLE_RATE = 44100;
     final String PATH_NAME = Environment.getExternalStorageDirectory() + "/GuitarTutorRec.wav";
-    //   final int PERMISSIONS_MULTIPLE_REQUEST = 123;
+    final int PERMISSIONS_MULTIPLE_REQUEST = 123;
 
     boolean isSoundPlaying, isRecording, isRecordPlaying, isPracticingMetronme, analyseEnabled, reachedEndOfRecordTime;
+    int counter = 0;
 
     Button playStopButton, recStopButton, playRecStopRecButton;
     MediaPlayer mediaPlayer;
@@ -47,9 +53,12 @@ public class Tutor extends AppCompatActivity {
     HomeWork homework;
     ProgressBar progressBar;
 
-    Thread practiceClick;
-    Thread practiceMetronome;
+    // Thread practiceClick;
+    //Thread practiceMetronome;
+
+    Thread practiceThread;
     Thread recordingWithMetronome;
+
     Tick tick;
 
     @Override
@@ -60,7 +69,7 @@ public class Tutor extends AppCompatActivity {
 
         String parameter = getIntent().getStringExtra("homeWorkId");
 
-        this.homework = (new DatabaseHelper(this)).fetchHomeworkById(Integer.parseInt(parameter));
+        this.homework = (new DatabaseHelper(this)).fetchHomeworkById(Integer.parseInt(parameter)); // fetch homwork by given parameter ID
 
         tick = new Tick(homework.getBpm());
 
@@ -74,11 +83,14 @@ public class Tutor extends AppCompatActivity {
         ((ImageView) findViewById(R.id.imageView_tab)).setImageResource(homework.getTabId());
         ((TextView) findViewById(R.id.textView_title)).setText(homework.getName());
 
-        // RequestPermisson();
+        RequestPermisson();
 
         File file = new File(PATH_NAME);
         if (file.exists())
             file.delete();
+
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // prevent screen lock automaticaly
     }
 
     @Override
@@ -123,7 +135,7 @@ public class Tutor extends AppCompatActivity {
             startSoundPlay();
             playStopButton.setText("Stop");
 
-        } else if (!isRecordPlaying) {
+        } else if (!isRecordPlaying && !isRecording && !isPracticingMetronme) {
             stopSoundPlay();
             playStopButton.setText("Meghallgatom");
 
@@ -144,6 +156,7 @@ public class Tutor extends AppCompatActivity {
 
             recStopButton.setText("Rec");
             stopRecording();
+
         } else if (!isSoundPlaying && !isRecordPlaying && !isPracticingMetronme) {
 
             if (isExternalStorageWritable()) {
@@ -152,7 +165,7 @@ public class Tutor extends AppCompatActivity {
                 startRecording();
             } else {
 
-                Toast.makeText(this, "Nem található külső memóra a hangrögzítéshez", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Nem található külső memória a hangrögzítéshez", Toast.LENGTH_LONG).show();
             }
         }
 
@@ -179,7 +192,9 @@ public class Tutor extends AppCompatActivity {
         if (!isPracticingMetronme && !isRecording && !isSoundPlaying && !isRecordPlaying) {
 
             isPracticingMetronme = true;
-            practiceMetronome();
+
+            practiceThread = startPracticeMetronome();
+            practiceThread.start();
 
         } else if (isPracticingMetronme) {
 
@@ -246,7 +261,7 @@ public class Tutor extends AppCompatActivity {
         }
     }
 
-    private void startRecording() { // creates new audio recorder instance, start recording thread and metronome
+    /*private void startRecording() { // creates new audio recorder instance, start recording thread and metronome
 
 
         soundRecorder = new SoundRecorder();
@@ -269,7 +284,7 @@ public class Tutor extends AppCompatActivity {
         recordAudioThread.start();
         recordingWithMetronome.start();
 
-    }
+    }*/
 
     private void stopRecording() {
 
@@ -287,8 +302,6 @@ public class Tutor extends AppCompatActivity {
             Log.d("sstop2", "stopRecording: ");
             isRecording = false;
             analyseEnabled = true;
-            reachedEndOfRecordTime = false;
-
             soundRecorder.stopRecording();
         }
 
@@ -316,7 +329,7 @@ public class Tutor extends AppCompatActivity {
 
     }
 
-    private Thread initializeMetronome(final boolean withRecording) {
+    /*private Thread initializeMetronome(final boolean withRecording) {
 
         final Handler handler = new Handler(getApplicationContext().getMainLooper());
 
@@ -364,24 +377,24 @@ public class Tutor extends AppCompatActivity {
             }
         }, "Metronome Thread");
 
-    }
+    }*/
 
-    private void practiceMetronome() {
+   /* private void practiceMetronome() {
 
         practiceMetronome = initializeMetronome(false);
         practiceClick = playClick(homework.getBeats());
 
         practiceMetronome.start();
         practiceClick.start();
-    }
+    }*/
 
-    private void stopPracticeMetronome() {
+   /* private void stopPracticeMetronome() {
 
         if (this.practiceMetronome != null && this.practiceClick != null) {
             practiceMetronome.interrupt();
             practiceClick.interrupt();
         }
-    }
+    }*/
 
     private void analyseRecord() {
 
@@ -399,58 +412,11 @@ public class Tutor extends AppCompatActivity {
         return false;
     }
 
- /*   private void RequestPermisson() {
+    private void RequestPermisson() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
-         /*   if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-
-                // Should we show an explanation?
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO)) {
-
-                    // Show an explanation to the user *asynchronously* -- don't block
-                    // this thread waiting for the user's response! After the user
-                    // sees the explanation, try again to request the permission.
-
-                } else {
-
-                    // No explanation needed, we can request the permission.
-
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.RECORD_AUDIO},
-                            1);
-
-                    // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                    // app-defined int constant. The callback method gets the
-                    // result of the request.
-                }
-            }*/
-
-          /*  if (ContextCompat.checkSelfPermission(this, Manifest.permission_group.STORAGE) != PackageManager.PERMISSION_GRANTED
-                    || ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.RECORD_AUDIO) || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission_group.STORAGE)) {
-
-                    new android.support.v7.app.AlertDialog.Builder(this)
-                            .setMessage("Engedélyezed ennek az alkalmazásnak a hozzáférést a Mikrofonhoz és a Fájlrendszerhez?")
-                            .setCancelable(false)
-                            .setPositiveButton("Igen", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    ActivityCompat.requestPermissions(Tutor.this, new String[]{Manifest.permission_group.STORAGE, Manifest.permission.RECORD_AUDIO}, PERMISSIONS_MULTIPLE_REQUEST);
-                                    dialog.dismiss();
-                                }
-                            })
-                            .setNegativeButton("Mégse", null)
-                            .show();
-
-                } else {
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, PERMISSIONS_MULTIPLE_REQUEST);
-
-                }
-
-
-            }*/
-   /*         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, PERMISSIONS_MULTIPLE_REQUEST);
             }
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -460,30 +426,29 @@ public class Tutor extends AppCompatActivity {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, PERMISSIONS_MULTIPLE_REQUEST);
             }
         }
-    }*/
+    }
 
-    /*
-        @Override
-        public void onRequestPermissionsResult(int requestCode,
-                                               String[] permissions, int[] grantResults) {
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 
-            switch (requestCode) {
-                case PERMISSIONS_MULTIPLE_REQUEST:
-                    if (grantResults.length > 0) {
-                        boolean conditoon = grantResults[2] == PackageManager.PERMISSION_GRANTED;
-                        boolean cameraPermission = grantResults[1] == PackageManager.PERMISSION_GRANTED;
-                        boolean readExternalFile = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+        switch (requestCode) {
+            case PERMISSIONS_MULTIPLE_REQUEST:
+                if (grantResults.length > 0) {
+                    boolean condition1 = grantResults[2] == PackageManager.PERMISSION_GRANTED;
+                    boolean condition2 = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                    boolean condition3 = grantResults[0] == PackageManager.PERMISSION_GRANTED;
 
-                        if (cameraPermission && readExternalFile && conditoon) {
-                            // write your logic here
-                        } else {
-                            RequestPermisson();
-                        }
+                    if (condition1 && condition2 && condition3) {
+
+                    } else {
+                        RequestPermisson();
                     }
-                    break;
-            }
+
+                }
+                break;
         }
-    */
+    }
+
     class Tick {
 
         float tick; //tempo means beats per minute, calculate milliseconds between ticks
@@ -495,6 +460,176 @@ public class Tutor extends AppCompatActivity {
             milliSeconds = (long) tick;
             nanoSeconds = (int) ((tick - (int) tick) * 1000000);
         }
+
+    }
+
+
+    private Thread playOneClick() {
+
+        final MediaPlayer mp = MediaPlayer.create(this, R.raw.metronome_click);
+
+        return new Thread(new Runnable() {
+            public void run() {
+
+                mp.start();
+                while (mp.isPlaying()) {
+
+                }
+                mp.release();
+            }
+        }, "Click Thread");
+
+    }
+
+    private Thread playOneMetronome() {
+
+        final Handler handler = new Handler(getApplicationContext().getMainLooper());
+
+        return new Thread(new Runnable() {
+
+            public void run() {
+
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        metronome.setChecked(!metronome.isChecked());
+                        metronomeCounter.setText("4/" + String.valueOf((counter % 4) + 1));
+
+                        if (counter < 3)
+                            counter++;
+                        else
+                            counter = 0;
+                    }
+                });
+
+            }
+        }, "Metronome Thread");
+
+    }
+
+    private Thread startPracticeMetronome() {
+
+        counter = 0;
+        return new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+
+                for (int i = homework.getBeats(); i > 0; i--) {
+
+                    playOneClick().start();
+                    playOneMetronome().start();
+
+                    try {
+                        Thread.currentThread().sleep(tick.milliSeconds, tick.nanoSeconds);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+
+                }
+                isPracticingMetronme = false;
+            }
+
+        });
+    }
+
+    private void stopPracticeMetronome() {
+
+        if (this.practiceThread != null) {
+            practiceThread.interrupt();
+        }
+    }
+
+    private void playPrecount() {
+
+        /*int forVariable;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            forVariable = 5;
+        else
+            forVariable = 4;*/
+
+        for (int i = 0; i < 4; i++) {
+
+            playOneClick().start();
+
+            try {
+                Thread.currentThread().sleep(tick.milliSeconds, tick.nanoSeconds);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+
+    }
+
+
+    private void startRecording() { // creates new audio recorder instance, start recording thread and metronome
+
+
+        soundRecorder = new SoundRecorder();
+
+        isRecording = true;
+
+        Thread recordAudioThread = soundRecorder.startRecording();
+        recordingWithMetronome = metronomeForRecording();
+
+        playPrecount();
+
+        recordAudioThread.start();
+        recordingWithMetronome.start();
+
+    }
+
+    private Thread metronomeForRecording() {
+
+        counter = 0;
+
+        analyseEnabled = false;
+        reachedEndOfRecordTime = false;
+
+        final Handler handler = new Handler(getApplicationContext().getMainLooper());
+
+        return new Thread(new Runnable() {
+
+            public void run() {
+
+                int i = 0;
+                while (i < homework.getBeats()) {
+
+                    playOneMetronome().start();
+
+                    try {
+                        Thread.currentThread().sleep(tick.milliSeconds, tick.nanoSeconds);
+                    } catch (InterruptedException e) {
+                        i = Integer.MAX_VALUE;
+                        break;
+                    }
+
+                    i++;
+                }
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        metronomeCounter.setText("4/4");
+                    }
+                });
+
+                if(i >= homework.getBeats()) {
+
+                    reachedEndOfRecordTime = true;
+                    stopRecording();
+                }
+
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        recStopButton.setText("Rec");
+                    }
+                });
+
+
+            }
+        }, "Metronome Thread");
 
     }
 }

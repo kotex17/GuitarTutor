@@ -12,14 +12,18 @@ import android.view.View;
 
 public class GuitarTutorMain extends AppCompatActivity {
 
+    DatabaseHelper dbh;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guitar_tutor_main);
 
+
+
         // on first run valami db is created on the system for songs and lessons, method checks first if database already exists
         try {
-            DatabaseHelper dbh = new DatabaseHelper(this);
+            dbh = new DatabaseHelper(this);
             dbh.createDataBase();
 
 /*
@@ -41,7 +45,7 @@ public class GuitarTutorMain extends AppCompatActivity {
             Log.d("b tab id", String.valueOf( this.getResources().getIdentifier("tab_blues_scale_f_75", "drawable", this.getPackageName())));
 */
 
-            //  dbh.UPDATE_DB_toDelete(); // delete this line
+             // dbh.UPDATE_DB_toDelete(); // delete this line
 
         } catch (Exception e) {
             e.printStackTrace();
