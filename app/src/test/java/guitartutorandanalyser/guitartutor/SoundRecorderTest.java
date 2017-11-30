@@ -32,13 +32,13 @@ public class SoundRecorderTest {
     @Before
     public void setUp() throws Exception {
 
-
+/*
         MockitoAnnotations.initMocks(this);
 
         String s = "/storage/emulated/0/GuitarTutorRec.wav";
         Mockito.when(Environment.getExternalStorageDirectory()).thenReturn("");
         recorder = new SoundRecorder();
-    }
+    */}
 
     @After
     public void tearDown() throws Exception {

@@ -53,7 +53,7 @@ public class Tutor extends AppCompatActivity {
     HomeWork homework;
     ProgressBar progressBar;
 
-    // Thread practiceClick;
+    //Thread practiceClick;
     //Thread practiceMetronome;
 
     Thread practiceThread;

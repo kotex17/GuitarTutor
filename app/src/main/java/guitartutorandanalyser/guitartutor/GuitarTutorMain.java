@@ -4,6 +4,7 @@ package guitartutorandanalyser.guitartutor;
 import android.content.DialogInterface;
 import android.content.Intent;
 
+import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,7 +20,7 @@ public class GuitarTutorMain extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guitar_tutor_main);
 
-
+Log.d("mivan2", Environment.getExternalStorageDirectory().toString());
 
         // on first run valami db is created on the system for songs and lessons, method checks first if database already exists
         try {
