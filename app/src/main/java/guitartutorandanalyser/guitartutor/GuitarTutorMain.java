@@ -20,8 +20,6 @@ public class GuitarTutorMain extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guitar_tutor_main);
 
-Log.d("mivan2", Environment.getExternalStorageDirectory().toString());
-
         // on first run valami db is created on the system for songs and lessons, method checks first if database already exists
         try {
             dbh = new DatabaseHelper(this);
@@ -44,9 +42,19 @@ Log.d("mivan2", Environment.getExternalStorageDirectory().toString());
             Log.d("p tab id", String.valueOf( this.getResources().getIdentifier("tab_pentaton_scale_f_75", "drawable", this.getPackageName())));
             Log.d("b sound id", String.valueOf( this.getResources().getIdentifier("lesson_exp_blues_scale_f_75", "raw", this.getPackageName())));
             Log.d("b tab id", String.valueOf( this.getResources().getIdentifier("tab_blues_scale_f_75", "drawable", this.getPackageName())));
-*/
 
-             // dbh.UPDATE_DB_toDelete(); // delete this line
+
+            Log.d("cliche beg sound id", String.valueOf( this.getResources().getIdentifier("lesson_beg_pentaton_cliche_160", "raw", this.getPackageName())));
+            Log.d("cliche beg tab id", String.valueOf( this.getResources().getIdentifier("tab_pentaton_cliche_160", "drawable", this.getPackageName())));
+            Log.d("cliche exp sound id", String.valueOf( this.getResources().getIdentifier("lesson_exp_pentaton_cliche_240", "raw", this.getPackageName())));
+            Log.d("cliche exp tab id", String.valueOf( this.getResources().getIdentifier("tab_pentaton_cliche_240", "drawable", this.getPackageName())));
+
+            Log.d("mese sound id", String.valueOf( this.getResources().getIdentifier("song_magyarnepmesek_130", "raw", this.getPackageName())));
+            Log.d("mese tab id", String.valueOf( this.getResources().getIdentifier("tab_magyarnepmesek_130", "drawable", this.getPackageName())));
+
+
+*/
+        //    dbh.UPDATE_DB_toDelete(); // delete this line
 
         } catch (Exception e) {
             e.printStackTrace();

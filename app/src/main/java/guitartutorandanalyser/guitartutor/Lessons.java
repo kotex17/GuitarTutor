@@ -181,6 +181,13 @@ public class Lessons extends AppCompatActivity {
         avaibleConditionMap.put(2, 4); //minor expert, condition: minor beginner
         avaibleConditionMap.put(6, 5); // blues, condtion: pentaton scale
 
+        avaibleConditionMap.put(9, 5); // pentaton: pentaton cliche1
+
+        avaibleConditionMap.put(8, 1); // pentatoc_cliche_2: pendaton cliche_1
+
+
+
+
         return avaibleConditionMap;
     }
 
