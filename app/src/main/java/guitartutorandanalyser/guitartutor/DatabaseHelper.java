@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -44,11 +43,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         super(context, DB_NAME, null, 1);
         this.context = context;
         DB_PATH = this.context.getDatabasePath(DB_NAME).toString();
-        Log.d("db path", DB_PATH);
-       /* try {
-            Log.d("getassets", this.context.getAssets().open(DB_NAME));
-        }catch (Exception e){}*/
-
     }
 
 

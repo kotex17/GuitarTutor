@@ -1,49 +1,34 @@
 package guitartutorandanalyser.guitartutor;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.os.Environment;
+import android.test.AndroidTestCase;
+import android.test.mock.MockContext;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowApplication;
-
-import be.tarsos.dsp.io.android.AndroidFFMPEGLocator;
-import be.tarsos.dsp.util.FFMPEGDownloader;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SoundAnalyserTest {
+public class SoundAnalyserTest extends AndroidTestCase {
 
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
-    @Mock
-    Context context;
-    @Mock
-    AndroidFFMPEGLocator ffmpeg;
+
+    //db path /storage/emulated/0/GuitarTutorRec.wav
 
     HomeWork hw = null;
 
-    SoundAnalyser analyser;
+    SoundAnalyser analyser = null;
+
+    float[] pitchMap1 = new float[]{123f, 234f, 345f, 456f, 567f, 678f, 789f, 890f, 901f, 123f, 234f, 345f, 456f, 567f, 678f, 789f, 890f, 901f, 123f, 234f, 345f, 456f, 567f, 678f, 789f, 890f, 901f, 123f, 234f, 345f, 456f, 567f, 678f, 789f, 890f, 901f, 123f, 234f, 345f, 456f, 567f, 678f, 789f, 890f, 901f};
+    float[] pitchMap2 = new float[]{123f, 234f, 345f, 456f, 567f, 678f, 789f, 890f, 901f, 123f, 234f, 345f, 456f, 567f, 678f, 789f, 890f, 901f, 123f, 234f, 345f, 456f, 567f, 678f, 789f, 890f, 901f, 123f, 234f, 345f, 456f, 567f, 678f, 789f, 890f, 901f, 123f, 234f, 345f, 456f, 567f, 678f, 789f, 890f, 901f};
+    String pitchMapHw = "123;234;345;456;567;678;789;890;901;123;234;345;456;567;678;789;890;901;123;234;345;456;567;678;789;890;901;123;234;345;456;567;678;789;890;901;123;234;345;456;567;678;789;890;901";
 
     @Before
     public void setUp() throws Exception {
 
-        hw = HomeWork.homeWorkCreator(1, "song", "1", 1, 1, 1, "2000.10.10.", 1, "550;440;440.56;413.65;", 26000, 25000);
-        analyser = new SoundAnalyser(hw,context,44100,"/GuitarRec.wav");
+        hw = HomeWork.homeWorkCreator(1, "song", "1", 1, 1, 1, "2000.10.10.", 1, pitchMapHw, 26000, 25000);
+        analyser = new SoundAnalyser(hw, getContext(), 44100, "/storage/emulated/0/GuitarTutorRec.wav");
     }
 
     @After
@@ -52,44 +37,35 @@ public class SoundAnalyserTest {
     }
 
     @Test
-    public void analyseRecord() throws Exception {
-        when((new FFMPEGDownloader())).thenReturn(null);
-        analyser.analyseRecord();
+    public void roundFloat2Decimal() throws Exception {
+        float result = analyser.roundFloat2Decimal(666.1111f);
+        float expected = 666.11f;
+        assertEquals(expected, result);
     }
 
+    @Test
+    public void compareResult() throws Exception {
+
+        analyser.recordedAudioMap = pitchMapHw;
+        analyser.compareResult(new Thread());
+    }
+
+    @Test
+    public void compareIntPitchMaps() throws Exception {
+
+        int result1 = analyser.comparePitchMaps(pitchMap1, pitchMap2);
+        assertEquals(100, result1);
+    }
+
+    @Test
+    public void getFloatPitchMap() throws Exception {
+        String str = "123;123.02;123.23;65;65.83;65.99;999;999.55;";
+        float[] expected = new float[]{123f, 123.02f, 123.23f, 65f, 65.83f, 65.99f, 999f, 999.55f};
+
+        float[] result = analyser.getFloatPitchMap(str);
+
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i], result[i]);
+        }
+    }
 }
-
-/*
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 21)
-public class SoundAnalyserTest {
-
-    Activity activity;
-
-    SoundAnalyser soundAnalyser;
-
-    @Before
-    public void setUp() throws Exception {
-        Intent tutorIntent = new Intent(ShadowApplication.getInstance().getApplicationContext(), Tutor.class);
-        tutorIntent.putExtra("homeWorkId", "1");
-
-        activity = Robolectric.buildActivity(Tutor.class).withIntent(tutorIntent).create().get();
-
-
-
-        HomeWork homeWork = new HomeWork();
-
-        soundAnalyser = new SoundAnalyser(homeWork,activity,44100, Environment.getExternalStorageDirectory()+"/GuitarTutorRec.wav");
-    }
-
-    @After
-    public void tearDown() throws Exception {
-
-    }
-
-    @Test
-    public void analyseRecord() throws Exception {
-        soundAnalyser.analyseRecord();
-    }
-
-}*/

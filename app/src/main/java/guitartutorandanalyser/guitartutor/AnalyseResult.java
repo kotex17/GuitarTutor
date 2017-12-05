@@ -112,14 +112,14 @@ public class AnalyseResult extends AppCompatActivity {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        android.os.SystemClock.sleep(700);
+                        android.os.SystemClock.sleep(600);
                         resultTextFeedback.setText(feedback);
                     }
                 });
 
                 if (result > currentHomework.getRecordpoint()) {
 
-                    for (int i = 0; i < 4; i++) {
+                    for (int i = 0; i < 3; i++) {
 
                         handler.post(new Runnable() {
                             @Override
@@ -129,7 +129,7 @@ public class AnalyseResult extends AppCompatActivity {
                         });
 
 
-                        android.os.SystemClock.sleep(700);
+                        android.os.SystemClock.sleep(600);
 
                         handler.post(new Runnable() {
                             @Override
@@ -138,7 +138,7 @@ public class AnalyseResult extends AppCompatActivity {
                             }
                         });
 
-                        android.os.SystemClock.sleep(700);
+                        android.os.SystemClock.sleep(600);
                     }
                 }
 

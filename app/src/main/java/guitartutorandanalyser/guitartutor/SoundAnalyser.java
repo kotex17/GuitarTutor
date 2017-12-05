@@ -3,6 +3,7 @@ package guitartutorandanalyser.guitartutor;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
@@ -18,8 +19,8 @@ import java.math.RoundingMode;
 
 public class SoundAnalyser {
 
-    HomeWork currentHomeWork;
-    String recordedAudioMap;
+    public HomeWork currentHomeWork;
+    public String recordedAudioMap;
     Context context;
 
     final int BUFFER_SIZE = 2048;
@@ -69,14 +70,14 @@ public class SoundAnalyser {
         compareResult(audioDispathcerThread);
     }
 
-    private float roundFloat2Decimal(float number) {
+    public float roundFloat2Decimal(float number) {
 
         BigDecimal bd = new BigDecimal(number);
         bd = bd.setScale(2, RoundingMode.HALF_UP);
         return bd.floatValue();
     }
 
-    private void compareResult(Thread audioDispathcerThread) {
+    public void compareResult(Thread audioDispathcerThread) {
 
         final Thread threadToWaitFor = audioDispathcerThread;
 
@@ -90,7 +91,7 @@ public class SoundAnalyser {
                     float[] intPitchMapHomeWork = getFloatPitchMap(currentHomeWork.getMap());
                     float[] intPitchMapRecord = getFloatPitchMap(recordedAudioMap);
 
-                    int result = compareIntPitchMaps(intPitchMapHomeWork, intPitchMapRecord);
+                    int result = comparePitchMaps(intPitchMapHomeWork, intPitchMapRecord);
 
                     startAnalyseResultActivity(result);
 
@@ -105,7 +106,7 @@ public class SoundAnalyser {
         compareThread.start();
     }
 
-    private float[] getFloatPitchMap(String map) throws Exception {
+    public float[] getFloatPitchMap(String map) throws Exception {
 
         int countDetectedPitches = map.length() - map.replace(";", "").length();
 
@@ -132,7 +133,7 @@ public class SoundAnalyser {
         return floatPitchMap;
     }
 
-    private int compareIntPitchMaps(float[] homework, float[] recorded) {
+    public int comparePitchMaps(float[] homework, float[] recorded) {
 
         int correct;
         int missed;
@@ -223,7 +224,7 @@ public class SoundAnalyser {
         return Math.round(bestResult);
     }
 
-    private void startAnalyseResultActivity(int result) {
+    public void startAnalyseResultActivity(int result) {
 
         Intent analyseResultIntent = new Intent("guitartutorandanalyser.guitartutor.AnalyseResult");
         analyseResultIntent.putExtra("result", String.valueOf(result));

@@ -33,6 +33,8 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresPermission;
 import android.support.annotation.StringDef;
 import android.support.annotation.StyleRes;
+import android.test.AndroidTestCase;
+import android.test.mock.MockContext;
 import android.util.Log;
 import android.view.Display;
 
@@ -57,25 +59,25 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
-public class DatabaseHelperTest {
+public class DatabaseHelperTest extends AndroidTestCase {
 
 
     DatabaseHelper dbh;
 
-    @Mock
-    Looper looper = Looper.getMainLooper();
 
 
-    Activity activity;
 
     @Before
     public void setUp() throws Exception {
 
-        MockitoAnnotations.initMocks(this);
-
-        activity = Robolectric.setupActivity(GuitarTutorMain.class);
-        dbh = new DatabaseHelper(activity);
+        //MockitoAnnotations.initMocks(this);
+/*
+        Context context = mock(MockContext.class);
+        Activity a = Mockito.mock(GuitarTutorMain.class);
+       // activity = Robolectric.setupActivity(GuitarTutorMain.class);
+        dbh = new DatabaseHelper(getContext());*/
     }
 
     @After
@@ -88,55 +90,10 @@ public class DatabaseHelperTest {
 
     }
 
-    @Test
-    public void checkDataBase() throws Exception {
-
-
-    }
-
-    @Test
-    public void openDataBase() throws Exception {
-
-    }
-
-    @Test
-    public void close() throws Exception {
-
-    }
-
-    @Test
-    public void updateDatabaseRecord() throws Exception {
-
-    }
-
-    @Test
-    public void fetchHomeworkById() throws Exception {
-
-    }
-
-    @Test
-    public void onCreate() throws Exception {
-
-    }
-
-    @Test
-    public void onUpgrade() throws Exception {
-
-    }
 
     @Test
     public void reachColumns() {
-        Assert.assertNotNull(DatabaseHelper.Column.COMPLETED);
-        Assert.assertNotNull(DatabaseHelper.Column.BEATS);
-        Assert.assertNotNull(DatabaseHelper.Column.BPM);
-        Assert.assertNotNull(DatabaseHelper.Column.ID);
-        Assert.assertNotNull(DatabaseHelper.Column.MAP);
-        Assert.assertNotNull(DatabaseHelper.Column.NAME);
-        Assert.assertNotNull(DatabaseHelper.Column.RECORDDATE);
-        Assert.assertNotNull(DatabaseHelper.Column.RECORDPOINT);
-        Assert.assertNotNull(DatabaseHelper.Column.SONGID);
-        Assert.assertNotNull(DatabaseHelper.Column.TABID);
-        Assert.assertNotNull(DatabaseHelper.Column.TYPE);
+
 
     }
 

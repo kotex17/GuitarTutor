@@ -6,12 +6,15 @@ import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.ArrayMap;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import java.util.LinkedHashMap;
 
 public class Lessons extends AppCompatActivity {
 
@@ -49,17 +52,17 @@ public class Lessons extends AppCompatActivity {
 
     private ArrayMap<Integer, String> populateListView(ListView listView, String type) {
 
-        ArrayMap<String, String> idToLessonName = sortMapByAvailability(fetchDatabase(type));
-
+        LinkedHashMap<String, String> idToLessonSorted = sortMapByAvailability(fetchDatabase(type));
+        //LinkedHashMap is a Map, with predictable iteration order
 
         ArrayMap<Integer, String> positionToId = new ArrayMap<>();
-        String[] items = new String[idToLessonName.keySet().size()];
+        String[] items = new String[idToLessonSorted.keySet().size()];
         int itemIndex = 0;
 
-        for (int i = idToLessonName.size() - 1; i >= 0; i--) {
+        for (String keyValue : idToLessonSorted.keySet()) {
 
-            items[itemIndex] = idToLessonName.get(idToLessonName.keyAt(i));
-            positionToId.put(itemIndex, idToLessonName.keyAt(i));
+            items[itemIndex] = idToLessonSorted.get(keyValue);
+            positionToId.put(itemIndex, keyValue);
             itemIndex++;
         }
 
@@ -92,9 +95,9 @@ public class Lessons extends AppCompatActivity {
     }
 
     // separates list items(at this point a map), available to learn first, not avalable ones last
-    private ArrayMap<String, String> sortMapByAvailability(ArrayMap<String, String> idToLessonName) {
+    private LinkedHashMap<String, String> sortMapByAvailability(ArrayMap<String, String> idToLessonName) {
 
-        ArrayMap<String, String> sortedMap = new ArrayMap<>();
+        LinkedHashMap<String, String> sortedMap = new LinkedHashMap<>();
 
         sortingPosition = -1;
 
@@ -126,7 +129,7 @@ public class Lessons extends AppCompatActivity {
 
         }
 
-        Cursor cursor = db.myDataBase.query(DatabaseHelper.TABLE_HOMEWORKS, new String[]{DatabaseHelper.Column.ID, DatabaseHelper.Column.TYPE, DatabaseHelper.Column.NAME, DatabaseHelper.Column.COMPLETED}, DatabaseHelper.Column.TYPE + " = ?", new String[]{type}, null, null, DatabaseHelper.Column.ID);
+        Cursor cursor = db.myDataBase.query(DatabaseHelper.TABLE_HOMEWORKS, new String[]{DatabaseHelper.Column.ID, DatabaseHelper.Column.TYPE, DatabaseHelper.Column.NAME, DatabaseHelper.Column.COMPLETED}, DatabaseHelper.Column.TYPE + " = ?", new String[]{type}, null, null, DatabaseHelper.Column.ID+" ASC");
 
         ArrayMap<String, String> idToLessonName = new ArrayMap<String, String>();
 
@@ -181,9 +184,9 @@ public class Lessons extends AppCompatActivity {
         avaibleConditionMap.put(2, 4); //minor expert, condition: minor beginner
         avaibleConditionMap.put(6, 5); // blues, condtion: pentaton scale
 
-        avaibleConditionMap.put(9, 5); // pentaton: pentaton cliche1
+        avaibleConditionMap.put(8, 5); // pentaton: pentaton cliche1
 
-        avaibleConditionMap.put(8, 1); // pentatoc_cliche_2: pendaton cliche_1
+        avaibleConditionMap.put(9, 8); // pentatoc_cliche_2: pendaton cliche_1
 
 
 
