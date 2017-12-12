@@ -1,8 +1,8 @@
 package guitartutorandanalyser.guitartutor;
 
-import android.content.Context;
+
 import android.test.AndroidTestCase;
-import android.test.mock.MockContext;
+
 
 import org.junit.After;
 import org.junit.Before;

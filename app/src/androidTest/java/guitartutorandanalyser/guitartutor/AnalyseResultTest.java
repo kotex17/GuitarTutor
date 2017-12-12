@@ -24,8 +24,6 @@ public class AnalyseResultTest {
     @Rule
     public ActivityTestRule<AnalyseResult> analyseTestRule = new ActivityTestRule<>(AnalyseResult.class, false, false);
 
-    Instrumentation.ActivityMonitor mainMonitor = getInstrumentation().addMonitor(GuitarTutorMain.class.getName(), null, false);
-    Instrumentation.ActivityMonitor tutorMonitor = getInstrumentation().addMonitor(Tutor.class.getName(), null, false);
 
     Activity analyseActivity = null;
 

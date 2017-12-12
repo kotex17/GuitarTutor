@@ -25,36 +25,6 @@ public class GuitarTutorMain extends AppCompatActivity {
             dbh = new DatabaseHelper(this);
             dbh.createDataBase();
 
-/*
-            Log.d("c sound id", String.valueOf( this.getResources().getIdentifier("lesson_beg_chromatic_scale_a_90", "raw", this.getPackageName())));
-            Log.d("c tab id", String.valueOf( this.getResources().getIdentifier("tab_chromatic_scale_a_90", "drawable", this.getPackageName())));
-            Log.d("s sound id", String.valueOf( this.getResources().getIdentifier("song_starwars_theme_102", "raw", this.getPackageName())));
-            Log.d("s tab id", String.valueOf( this.getResources().getIdentifier("tab_starwars_theme_102", "drawable", this.getPackageName())));
-
-
-            Log.d("m1 sound id", String.valueOf( this.getResources().getIdentifier("lesson_beg_minor_scale_g_60", "raw", this.getPackageName())));
-            Log.d("m1 tab id", String.valueOf( this.getResources().getIdentifier("tab_minor_scale_g_60", "drawable", this.getPackageName())));
-            Log.d("m2 sound id", String.valueOf( this.getResources().getIdentifier("lesson_exp_minor_scale_g_90", "raw", this.getPackageName())));
-            Log.d("m2 tab id", String.valueOf( this.getResources().getIdentifier("tab_minor_scale_g_90", "drawable", this.getPackageName())));
-
-
-            Log.d("p sound id", String.valueOf( this.getResources().getIdentifier("lesson_beg_pentaton_scale_f_75", "raw", this.getPackageName())));
-            Log.d("p tab id", String.valueOf( this.getResources().getIdentifier("tab_pentaton_scale_f_75", "drawable", this.getPackageName())));
-            Log.d("b sound id", String.valueOf( this.getResources().getIdentifier("lesson_exp_blues_scale_f_75", "raw", this.getPackageName())));
-            Log.d("b tab id", String.valueOf( this.getResources().getIdentifier("tab_blues_scale_f_75", "drawable", this.getPackageName())));
-
-
-            Log.d("cliche beg sound id", String.valueOf( this.getResources().getIdentifier("lesson_beg_pentaton_cliche_160", "raw", this.getPackageName())));
-            Log.d("cliche beg tab id", String.valueOf( this.getResources().getIdentifier("tab_pentaton_cliche_160", "drawable", this.getPackageName())));
-            Log.d("cliche exp sound id", String.valueOf( this.getResources().getIdentifier("lesson_exp_pentaton_cliche_240", "raw", this.getPackageName())));
-            Log.d("cliche exp tab id", String.valueOf( this.getResources().getIdentifier("tab_pentaton_cliche_240", "drawable", this.getPackageName())));
-
-            Log.d("mese sound id", String.valueOf( this.getResources().getIdentifier("song_magyarnepmesek_130", "raw", this.getPackageName())));
-            Log.d("mese tab id", String.valueOf( this.getResources().getIdentifier("tab_magyarnepmesek_130", "drawable", this.getPackageName())));
-
-
-*/
-        //    dbh.UPDATE_DB_toDelete(); // delete this line
 
         } catch (Exception e) {
             e.printStackTrace();

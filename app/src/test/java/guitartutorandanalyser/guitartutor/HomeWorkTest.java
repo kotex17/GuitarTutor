@@ -2,14 +2,11 @@ package guitartutorandanalyser.guitartutor;
 
 import junit.framework.Assert;
 
-import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
 
-/**
- * Created by Marcus on 2017. 11. 27..
- */
+
+
 public class HomeWorkTest {
 
     int _id = 1;

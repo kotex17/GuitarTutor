@@ -31,7 +31,7 @@ public class SoundRecorder {
             AudioFormat.ENCODING_PCM_16BIT) / 2;
 
     boolean isSoundRecording;
-    int recSizeInByte;
+    public int recSizeInByte;
     AudioRecord recorder;
 
 
@@ -84,7 +84,7 @@ public class SoundRecorder {
         }
     }
 
-    private byte[] short2byte(short[] sData) {
+    public byte[] short2byte(short[] sData) {
         // all android supports little endianness, Android ARM systems are bi endian, by deafault littleendian (manualy can be swithced to big endian)
         //android audio format PCM16bit record in the default device native endian
         byte[] bytes = new byte[sData.length * 2];
@@ -97,7 +97,7 @@ public class SoundRecorder {
         return bytes;
     }
 
-    private byte[] createWavHeader() {
+    public byte[] createWavHeader() {
         // The default byte ordering assumed for WAVE data files is little-endian. Files written using the big-endian byte ordering scheme have the identifier RIFX instead of RIFF.
 
         short channels = 1; //mono
@@ -137,7 +137,7 @@ public class SoundRecorder {
         return header;
     }
 
-    private void updateWavHeader() {
+    public void updateWavHeader() {
 
         byte[] bytesToUpdate = ByteBuffer
                 .allocate(8)

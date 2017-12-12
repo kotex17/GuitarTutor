@@ -197,12 +197,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public void UPDATE_DB_toDelete(){ // THIS METHOD TO DELETE!!!!!!
-        try {
-            copyDataBase();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
 
 }
